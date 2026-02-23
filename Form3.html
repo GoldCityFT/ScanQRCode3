@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แบบสอบถามลูกค้า</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+ <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background: #00C300;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #009f2b;
+    }
+
+    /* Modal popup */
+    #modal {
+      display: none;
+      position: fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #modal div {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 300px;
+      width: 90%;
+      box-sizing: border-box;
+    }
+
+    /* Responsive สำหรับมือถือ */
+    @media (max-width: 768px) {
+      h2 {
+        font-size: 1.8rem;
+      }
+      form {
+        padding: 15px;
+        max-width: 90%;
+      }
+      input, select, button {
+        font-size: 1rem;
+        padding: 10px;
+      }
+      #modal div {
+        padding: 15px;
+      }
+    }
+
+
+   form {
+  display: none; /* ซ่อนก่อน */
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+}
+
+   
+  </style>
+</head>
+<body>
+<h2>แบบสอบถาม</h2>
+
+<form id="surveyForm" action="https://script.google.com/macros/s/AKfycbyklv9SQB7L2WdrTjHRuwZkm9UB0zime9s8v8gutC2p3VcVPQB1Pd3I8rZoQA_v63zx/exec" method="POST" target="hidden_iframe">
+  <input type="hidden" name="token" value="Gl0D$Yt1@">
+  <input type="hidden" id="UserId" name="UserId">
+  <input type="hidden" id="Tracking" name="Tracking">
+
+  <label>ชื่อ - นามสกุล </label>
+  <input type="text" name="DisplayName" required placeholder="ต้องระบุ">
+
+  <label>ที่อยู่ (ถ้ามี)</label>
+  <input type="text" name="Location" >
+
+  
+ <!-- 
+  <label>เบอร์โทร</label>
+  <input type="number" name="Phone" required placeholder="ต้องระบุ">  
+ -->
+
+  <label>รหัสไปรษณีย์</label>
+  <input type="text" name="PostCode" required placeholder="ต้องระบุ">
+
+  <label>สินค้าที่ซื้อล่าสุด</label>
+  <select id="itemSelect" name="ItemName" required>
+    <option value="">-- เลือกสินค้า --</option>
+    <option value="รองเท้าแตะ">รองเท้าแตะ</option>
+    <option value="รองเท้าผ้าใบ">รองเท้าผ้าใบ</option>
+  </select>
+
+  <label>สี</label>
+  <select id="colorSelect" name="Color" required>
+    <option value="">-- เลือกสี --</option>
+  </select>
+
+  <label>ขนาด (ถ้ามี)</label>
+  <select name="Size">
+    <option value="">-- เลือกขนาด --</option>
+    <option value="39">39</option>
+    <option value="40">40</option>
+    <option value="41">41</option>
+    <option value="42">42</option>
+    <option value="43">43</option>
+    <option value="44">44</option>
+    <option value="45">45</option>
+  </select>
+  
+ <!-- 
+  <label>Invoice (ถ้ามี)</label>
+  <input type="text" name="Invoice" placeholder="เช่น INV1234">
+-->
+  
+  <button type="submit">Submit</button>
+</form>
+
+<!-- ใช้ iframe ซ่อนการโหลดหน้าใหม่ -->
+<iframe name="hidden_iframe" style="display:none;"></iframe>
+
+<!-- popup modal -->
+<div id="modal" style="
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.7);
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+">
+  <div style="
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    text-align:center;
+    max-width:300px;
+  ">
+    
+    <p>กรอกข้อมูลสำเร็จ!</p>
+    <button id="okBtn">OK</button>
+  </div>
+</div>
+ <!-- popup รอสักครู่ -->
+<div id="loadingModal" style="
+  display:flex;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.5);
+  justify-content:center;
+  align-items:center;
+  z-index:2000;
+">
+  <div style="
+    background:white;
+    padding:4vw;            /* ใช้ vw ให้ปรับตามหน้าจอ */
+    border-radius:2vw;
+    text-align:center;
+    max-width:90%;          /* ไม่เกิน 90% ของจอ */
+    width:90%;
+    font-size:4vw;          /* ขนาดตัวอักษรปรับตามจอ */
+    box-sizing:border-box;
+  ">
+    <p>กรุณารอสักครู่...</p>
+  </div>
+</div>
+<script>
+let isSubmitted = false;
+
+const itemSelect = document.getElementById("itemSelect");
+const colorSelect = document.getElementById("colorSelect");
+const form = document.getElementById("surveyForm");
+const modal = document.getElementById("modal");
+const okBtn = document.getElementById("okBtn");
+const loadingModal = document.getElementById("loadingModal");
+
+const colorOptions = {
+  "รองเท้าแตะ": ["ดำ", "ขาว"],
+  "รองเท้าผ้าใบ": ["แดง", "ดำ", "ขาว", "ครีม", "เขียว", "น้ำเงิน"]
+};
+
+function updateColors() {
+  const selectedItem = itemSelect.value;
+  colorSelect.innerHTML = '<option value="">-- เลือกสี --</option>';
+  if (selectedItem && colorOptions[selectedItem]) {
+    colorOptions[selectedItem].forEach(color => {
+      const option = document.createElement("option");
+      option.value = color;
+      option.textContent = color;
+      colorSelect.appendChild(option);
+    });
+  }
+}
+itemSelect.addEventListener("change", updateColors);
+
+// 0 helper: fetch พร้อม timeout ป้องกันค้าง
+async function fetchWithTimeout(resource, options = {}) {
+  const { timeout = 8000 } = options;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  const response = await fetch(resource, { ...options, signal: controller.signal });
+  clearTimeout(id);
+  return response;
+}
+
+async function main() {
+  try {
+    console.log("เริ่ม main()");
+    await liff.init({ liffId: "2008187346-LZW3ndvO" });
+    if (!liff.isLoggedIn()) return liff.login();
+
+    const profile = await liff.getProfile();
+    document.getElementById("UserId").value = profile.userId;
+
+    const trackingCode = sessionStorage.getItem("tracking") || "";
+    document.getElementById("Tracking").value = trackingCode;
+    console.log("Tracking:", trackingCode);
+
+    if (!trackingCode) {
+      loadingModal.style.display = "none";
+      modal.querySelector("p").textContent = "❌ ไม่พบ QR Code กรุณาสแกนก่อน";
+      modal.style.display = "flex";
+      okBtn.onclick = () => {
+        modal.style.display = "none";
+        window.location.href = "ScanQrcode3.html";
+      };
+      return;
+    }
+
+    // โหลดข้อมูลจาก Google Sheet ก่อน (timeout ป้องกันค้าง)
+    const SECRET_TOKEN = "Gl0D$Yt1@";
+    const GET_URL = `https://script.google.com/macros/s/AKfycbyklv9SQB7L2WdrTjHRuwZkm9UB0zime9s8v8gutC2p3VcVPQB1Pd3I8rZoQA_v63zx/exec?token=${SECRET_TOKEN}&UserId=${profile.userId}`;
+    console.log("Fetch:", GET_URL);
+
+    let result = {};
+    try {
+      const res = await fetchWithTimeout(GET_URL, { timeout: 8000 });
+      result = await res.json();
+    } catch (err) {
+      console.warn("fetch timeout หรือ error", err);
+    }
+
+    // มีข้อมูลใน Sheet → ใช้ก่อน
+    if (result.lastData && (result.lastData.DisplayName || result.lastData.PostCode)) {
+      const d = result.lastData;
+      document.querySelector("input[name='DisplayName']").value = d.DisplayName || "";
+      document.querySelector("input[name='Location']").value = d.Location || "";
+      document.querySelector("input[name='PostCode']").value = d.PostCode || "";
+    } else {
+      // fallback จาก ScanQrcode3
+      const fallback = JSON.parse(sessionStorage.getItem("selectedRow") || "{}");
+      document.querySelector("input[name='DisplayName']").value = fallback.CustomerName || "";
+      document.querySelector("input[name='Location']").value = fallback.BillingAddr || "";
+      document.querySelector("input[name='PostCode']").value = fallback.BillingPostCode || "";
+    }
+
+  } catch (err) {
+    console.error("main() error:", err);
+    modal.querySelector("p").textContent = "เกิดข้อผิดพลาดในการโหลดข้อมูล โปรดลองอีกครั้ง";
+    modal.style.display = "flex";
+    okBtn.onclick = () => (modal.style.display = "none");
+  } finally {
+    console.log("ซ่อน loading แสดงฟอร์ม");
+    loadingModal.style.display = "none";
+    form.style.display = "block";
+  }
+}
+
+main();
+
+// ส่งข้อมูล
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
+  const selectedItem = itemSelect.value;
+  const selectedColor = colorSelect.value;
+  if (selectedItem && !selectedColor) {
+    modal.querySelector("p").textContent = "กรุณาเลือกสีด้วยครับ";
+    modal.style.display = "flex";
+    okBtn.onclick = () => (modal.style.display = "none");
+    return;
+  }
+
+  isSubmitted = true;
+  form.submit();
+  modal.querySelector("p").textContent = "กรอกข้อมูลสำเร็จ!";
+  modal.style.display = "flex";
+
+  // เคลียร์ค่า input
+  ["DisplayName", "Location", "PostCode"].forEach(name => {
+    document.querySelector(`input[name='${name}']`).value = "";
+  });
+  itemSelect.value = "";
+  colorSelect.innerHTML = '<option value="">-- เลือกสี --</option>';
+
+  sessionStorage.removeItem("tracking");
+});
+
+// ส่ง beacon เผื่อปิดหน้า
+document.addEventListener("visibilitychange", function () {
+  if (!isSubmitted && document.visibilityState === "hidden") {
+    const data = new FormData();
+    data.append("token", "Gl0D$Yt1@");
+    data.append("UserId", document.getElementById("UserId").value);
+    data.append("Tracking", document.getElementById("Tracking").value);
+    navigator.sendBeacon(
+      "https://script.google.com/macros/s/AKfycbyklv9SQB7L2WdrTjHRuwZkm9UB0zime9s8v8gutC2p3VcVPQB1Pd3I8rZoQA_v63zx/exec",
+      data
+    );
+  }
+});
+
+okBtn.addEventListener("click", () => {
+  modal.style.display = "none";
+  liff.closeWindow();
+});
+</script>
+</body>
+</html>
