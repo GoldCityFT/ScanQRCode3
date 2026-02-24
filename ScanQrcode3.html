@@ -234,8 +234,55 @@ html, body {
     ⏳ กำลังบันทึกข้อมูล...
   </div>
 </div>
-
+  
 <script>
+  // ===== Flow guard (ScanQrcode3) =====
+const FLOW_TTL_MS = 10 * 60 * 1000; // แนะนำ 10 นาที
+const INDEX_URL = "index.html";     // ✅ ปรับชื่อไฟล์ให้ตรงของจริง (index.html / Index.html)
+
+function touchFlow(){
+  sessionStorage.setItem("flow_last_touch", String(Date.now()));
+}
+
+function isFlowExpired(){
+  const last = Number(sessionStorage.getItem("flow_last_touch") || 0);
+  return !last || (Date.now() - last) > FLOW_TTL_MS;
+}
+
+function guardFlowOrRestart(){
+  // ไม่มี run id = ไม่ได้เข้าจาก Index (หรือโดนเคลียร์) → กลับไปเริ่มใหม่
+  const runId = sessionStorage.getItem("flow_run_id");
+  if(!runId || isFlowExpired()){
+    window.location.replace(INDEX_URL);
+    return false;
+  }
+  return true;
+}
+
+// โหลดหน้า / reload
+// กัน BFCache: ถ้าหน้าถูก restore จาก back/forward cache → รีสตาร์ทหน้านี้ใหม่
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) {
+    window.location.replace("ScanQrcode3.html");
+    return;
+  }
+
+  if(!guardFlowOrRestart()) return;
+  touchFlow();
+
+  const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
+  if(scannedCodes.length > 0){
+    showAlertPopup("⚠️ คุณเคยบันทึกข้อมูลนี้แล้ว", true);
+  } else {
+    document.getElementById('popupMode').style.display = 'flex';
+  }
+});
+
+// เวลาใกล้ปิด/ซ่อนหน้า → touch ไว้หน่อย (กัน TTL ตัดกลางอากาศแบบงง ๆ)
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") touchFlow();
+});
+  
 let isScanned = false;
 let html5QrCode = null;
 let currentMode = null;
@@ -256,7 +303,7 @@ async function fetchTrackingData(trackingCode){
 
 // message = ข้อความแจ้งเตือน
 // redirect = true/false (default true)
-function showAlertPopup(message, redirect = true){
+async function showAlertPopup(message, redirect = true){
   // ปิด popupMode และ manualInput
   document.getElementById('popupMode').style.display = 'none';
   document.getElementById('manualInput').style.display = 'none';
@@ -271,19 +318,39 @@ function showAlertPopup(message, redirect = true){
   btnContainer.innerHTML = "";
   popup.style.display = "flex";
 
-  setTimeout(()=>{
+   setTimeout(async ()=>{
     popup.style.display = "none";
-    isScanned = false; // reset flag
+
+    if(!redirect) isScanned = false;
 
     if(redirect){
-      window.location.href = "Form3.html";
+      await stopCameraSafely();
+      window.location.replace("Form3.html");
     }
   }, 2000);
 }
 
   // กดปุ่ม Lost → ไปหน้า Losstrackingcode.html
-document.getElementById('popupLostBtn').onclick = () => {
-  window.location.href = "Losstrackingcode3.html";
+document.getElementById('popupLostBtn').onclick = async () => {
+ if(!guardFlowOrRestart()) return;
+  touchFlow();
+
+    //  กัน race condition / callback ยิงซ้ำ
+  isScanned = true;
+  isStartingCamera = false;
+  isCameraRunning = false;
+  await stopCameraSafely();
+
+  // เคลียร์ข้อมูลที่อาจค้างจากการเลือก customer (กันหลอน)
+  sessionStorage.removeItem("selectedRow");
+
+  // ระบุว่าไม่มี tracking
+  sessionStorage.setItem("tracking", "UNKNOWN");
+
+  // กันสแกนซ้ำ
+  sessionStorage.setItem("scannedCodes", JSON.stringify(["UNKNOWN"]));
+
+  showAlertPopup("ℹ️ ไม่สามารถระบุรหัสพัสดุได้ กำลังพาไปกรอกข้อมูล…", true);
 };
 
 
@@ -329,10 +396,22 @@ function showPopupWithSelection(dataArray, callback){
   skipBtn.style.color = "white";
   skipBtn.style.fontWeight = "bold";
   skipBtn.textContent = "ไม่มีข้อมูลที่ตรงกัน";
-  skipBtn.onclick = () => {
-    popup.style.display = "none";
-    window.location.href = "Form2.html";
-  };
+  
+  skipBtn.onclick = async () => {
+  popup.style.display = "none";
+    
+ // 🔒 กัน race condition / callback ยิงซ้ำ
+  isScanned = true;
+  isStartingCamera = false;
+  isCameraRunning = false;
+  await stopCameraSafely();
+    
+  sessionStorage.removeItem("selectedRow");
+  const t = sessionStorage.getItem("tracking") || "UNKNOWN"; // ปกติจะมีอยู่แล้ว
+  sessionStorage.setItem("scannedCodes", JSON.stringify([t]));
+
+  showAlertPopup("ℹ️ ไม่พบข้อมูลที่ตรงกัน กำลังพาไปกรอกข้อมูล…", true);
+};
   btnContainer.appendChild(skipBtn);
 
   popup.style.display = "flex";
@@ -340,19 +419,29 @@ function showPopupWithSelection(dataArray, callback){
   
 // ใช้กับทั้ง QR และ Manual
 async function processCode(code){
-  if(!code) return;
+  if(!guardFlowOrRestart()) return;
+  touchFlow();
 
+  code = (code || "").trim();
+  if(!code){
+    await showAlertPopup("❌ กรุณากรอกข้อมูลด้วย", false);
+    return;
+  }
+  
+  // กันซ้ำจาก callback กล้อง
+  if(isScanned) return;     // กันซ้ำ
+  isScanned = true;         // ล็อคทันที (ทั้ง scan+manual)
+
+  await stopCameraSafely(); // หยุดกล้อง ลดสแกนซ้ำ/ค้าง
+  
   const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
-
   if(scannedCodes.includes(code)) {
     showAlertPopup("⚠️ คุณเคยบันทึกข้อมูลนี้แล้ว", true);
     return;
   }
 
   // บันทึกรหัสที่สแกนแล้ว แต่ยังไม่ส่งไป backend
-  scannedCodes.push(code);
   sessionStorage.setItem('tracking', code);
-  sessionStorage.setItem('scannedCodes', JSON.stringify(scannedCodes));
 
   // --- ดึงข้อมูลจาก App Script ---
   const data = await fetchTrackingData(code);
@@ -368,25 +457,31 @@ async function processCode(code){
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tracking: selectedRow.TrackingCode })
         });
+
+        sessionStorage.setItem("scannedCodes", JSON.stringify([code]));
         // --- แสดง popup บันทึกสำเร็จ ---
         showAlertPopup("✅ บันทึกเรียบร้อย!", true);
       } catch(err){
         console.error('Update backend failed:', err);
-        showAlertPopup("❌ เกิดข้อผิดพลาดในการบันทึก");
+        isScanned = false; // ✅ ให้ลองใหม่ได้
+        showAlertPopup("❌ เกิดข้อผิดพลาดในการบันทึก", false);
       }
     });
   } else {
+    sessionStorage.setItem("scannedCodes", JSON.stringify([code]));
+    sessionStorage.removeItem("selectedRow");
     showAlertPopup("❌ ไม่พบข้อมูลในระบบกรุณากรอกข้อมูล", true);
   }
 }
 
-
-  
 // Scan mode
 async function scanQRCode() {
+  if(!guardFlowOrRestart()) return;
+  touchFlow();
+  
   const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
   if(scannedCodes.length > 0){
-    showAlertPopup("⚠️ คุณเคยสแกน QR Code นี้แล้ว");
+    showAlertPopup("⚠️ คุณทำรายการนี้ไปแล้ว", true);
     return;
   }
 
@@ -401,8 +496,94 @@ async function scanQRCode() {
   currentMode = "scan";
   isScanned = false;
 
-  //manual + submit
+  // เริ่มกล้อง (มี guard กันซ้อนแล้ว)
+  await stopCameraSafely();
+  await main(); 
+  
+}
+
+// เพิ่ม flag: คุมสถานะการทำงานชัด ๆ
+let isStartingCamera = false;
+let isCameraRunning = false;
+
+async function stopCameraSafely(){
+  try{
+    if(html5QrCode && isCameraRunning){
+      await html5QrCode.stop();
+      await html5QrCode.clear();
+    }
+  }catch(e){
+    console.warn("stopCameraSafely:", e);
+  }finally{
+    isCameraRunning = false;
+    isStartingCamera = false;
+  }
+}
+// ออกจากหน้า = หยุดกล้อง ลดเคสเปิดใหม่แล้วกล้องไม่มา
+window.addEventListener("pagehide", () => {
+  stopCameraSafely();
+});
+  
+// QR function
+async function main() {
+  if(!guardFlowOrRestart()) return;
+  touchFlow();
+
+  if(isStartingCamera || isCameraRunning) return; // ✅ กัน start ซ้ำ
+  isStartingCamera = true;
+
+  try{
+    if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+
+    const config = {
+      fps: 10,
+      qrbox: (w,h)=>{ const s=w*0.6; return {width:s,height:s}; }
+    };
+
+    await html5QrCode.start(
+      { facingMode: "environment" },
+      config,
+    async (qrCodeMessage) => {
+      showLoadingPopup(true);
+      try{
+      touchFlow();
+      await processCode(qrCodeMessage);
+    } finally {
+      showLoadingPopup(false);
+    }
+  },
+      (errorMessage) => { /* เงียบไว้ ไม่ต้อง log เยอะ */ }
+    );
+
+    isCameraRunning = true;
+
+  }catch(err){
+    console.error("Camera start error:", err);
+    showAlertPopup("❌ ไม่สามารถเปิดกล้องได้", false);
+    await stopCameraSafely();
+  }finally{
+    isStartingCamera = false;
+  }
+}
+
+
+  
+  // ปุ่มเลือก Scan / Manual
+document.getElementById('popupScanOrManualBtn').onclick = scanQRCode;
+
+  function showLoadingPopup(show = true){
+  document.getElementById('popupLoading').style.display = show ? 'flex' : 'none';
+}
+
+  document.getElementById('manualCode').addEventListener('focus', () => {
+  stopCameraSafely();
+});
+  
+    //manual + submit
 document.getElementById('manualSubmit').onclick=async ()=>{
+   if(!guardFlowOrRestart()) return;
+  touchFlow();
+  
     if(isScanned){
     showAlertPopup("⚠️ คุณได้บันทึกข้อมูลแล้ว", false);
     return;
@@ -424,51 +605,6 @@ document.getElementById('manualSubmit').onclick=async ()=>{
   }
 };
 
-  main();
-  
-}
-
-// QR function
-async function main() {
-  if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
-  const config = { fps:10, qrbox:(w,h)=>{ const s=w*0.6; return {width:s,height:s}; 
-    }
-    };
-  html5QrCode.start(
-    { facingMode: "environment" },
-    config,
-    async qrCodeMessage => {
-      if(isScanned) return;
-      isScanned = true;
-      await processCode(qrCodeMessage.trim());
-    },
-    errorMessage => { console.log("Scanning...", errorMessage); }
-  ).catch(err=>{
-    console.error("Camera start error:", err);
-    showAlertPopup("❌ ไม่สามารถเปิดกล้องได้", false);
-  });
-}
-
-  // ปุ่มเลือก Scan / Manual
-document.getElementById('popupScanOrManualBtn').onclick = scanQRCode;
-
-  function showLoadingPopup(show = true){
-  document.getElementById('popupLoading').style.display = show ? 'flex' : 'none';
-}
-
-  
-  
-// โหลดหน้า / reload
-window.addEventListener('pageshow', () => {
-  const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
-  if(scannedCodes.length > 0){
-    // ถ้าเคยสแกนแล้ว → แจ้งเตือน และไป Form
-    showAlertPopup("⚠️ คุณเคยบันทึกข้อมูลนี้แล้ว", true);
-  } else {
-    // ยังไม่เคยสแกน → แสดง popup เลือกโหมด
-    document.getElementById('popupMode').style.display = 'flex';
-  }
-});
   
 </script>
 </body>
