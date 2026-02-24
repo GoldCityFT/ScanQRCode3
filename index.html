@@ -45,42 +45,58 @@ p
 </head>
 <body>
   <h1>ยินดีต้อนรับ! คุณลูกค้า</h1>
-  <p>กำลังตรวจสอบ LINE login …</p>
+  <p id="status">กำลังตรวจสอบ LINE login …</p>
   
- <script>
-  async function main() {
-    try {
-      await liff.init({ liffId: "2008187346-LZW3ndvO" }); // 2007956346-G5BmkAQl
+<script>
+  const LIFF_ID  = "2008187346-LZW3ndvO";
+  const NEXT_URL = "ScanQrcode3.html";
 
-      const alreadyReset = sessionStorage.getItem("alreadyReset");
+  const FLOW_KEYS = [
+    "tracking","selectedRow","scannedCodes",
+    "flow_run_id","flow_started_at","flow_last_touch"
+  ];
 
-      if (liff.isLoggedIn() && !alreadyReset) {
-        // กัน reload loop
-       // localStorage.clear();
-        sessionStorage.clear();
-        sessionStorage.setItem("alreadyReset", "true");
+  function setStatus(msg){ document.getElementById("status").textContent = msg; }
 
-        // reload ใหม่แบบ clean
-        window.location.reload();
+  function newRunId(){
+    return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  }
+
+  function resetFlow(){
+    FLOW_KEYS.forEach(k => sessionStorage.removeItem(k));
+  }
+
+  function startNewFlow(){
+    resetFlow();
+    const now = Date.now();
+    sessionStorage.setItem("flow_run_id", newRunId());
+    sessionStorage.setItem("flow_started_at", String(now));
+    sessionStorage.setItem("flow_last_touch", String(now));
+  }
+
+  async function boot(){
+    try{
+      setStatus("กำลังเริ่มระบบ…");
+      await liff.init({ liffId: LIFF_ID });
+
+      if(!liff.isLoggedIn()){
+        setStatus("กำลังพาไปเข้าสู่ระบบ…");
+        liff.login({ redirectUri: window.location.href });
         return;
       }
 
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
+      // ทุกครั้งที่เข้าหน้านี้ = เริ่ม flow ใหม่
+      startNewFlow();
 
-      // login แล้ว → ไปหน้า ScanQrcode.html
-      window.location.href = "ScanQrcode3.html";
-
-    } catch (err) {
+      setStatus("เข้าสู่ระบบแล้ว กำลังไปหน้าสแกน…");
+      window.location.replace(NEXT_URL);
+    }catch(err){
       console.error("LIFF init error:", err);
-      alert("เกิดข้อผิดพลาด LIFF init");
+      alert("เกิดข้อผิดพลาดในการเริ่ม LIFF");
     }
   }
 
-  window.onload = main;
+  document.addEventListener("DOMContentLoaded", boot);
 </script>
-
-</body>
+</body> 
 </html>
