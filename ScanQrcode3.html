@@ -159,16 +159,16 @@ html, body {
 }
 
 #manualSubmit {
-  margin-top: 10px;
+  /*margin-top: 10px;*/
   padding: 12px;
   border: none;
   border-radius: 10px;
   background: #00C300;
   color: white;
-  font-size: 1.4rem; /* เล็กลง */
+  font-size: 1.2rem; /* เล็กลง */
   font-weight: bold;
   cursor: pointer;
-  width: 100%;
+  /*width: 100%;*/
   transition: all 0.2s ease-in-out;
 }
 
@@ -208,7 +208,37 @@ html, body {
   หรือกรอกรหัสพัสดุด้านล่าง (ถ้าไม่สะดวกสแกน QR)
 </p>
   <input type="text" id="manualCode" placeholder="กรอกโค้ดด้วยตัวเอง">
-  <button id="manualSubmit">ยืนยัน</button>
+ <div style="display:flex; gap:10px; width:100%; margin-top:10px;">
+  
+  <button id="manualSubmit" style="
+      flex:1;
+      padding:12px;
+      border:none;
+      border-radius:10px;
+      background:#00C300;
+      color:white;
+      font-size:1.2rem;
+      font-weight:bold;
+      cursor:pointer;
+  ">
+    ยืนยัน
+  </button>
+
+  <button id="btnBackToCamera" style="
+      flex:1;
+      padding:12px;
+      border:none;
+      border-radius:10px;
+      background:#555;
+      color:white;
+      font-size:1.2rem;
+      font-weight:bold;
+      cursor:pointer;
+  ">
+    กลับไปใช้กล้อง
+  </button>
+
+</div>
 </div>
 
   <!-- popup loading -->
@@ -559,7 +589,8 @@ async function main() {
 
   }catch(err){
     console.error("Camera start error:", err);
-    showAlertPopup("❌ ไม่สามารถเปิดกล้องได้", false);
+    sessionStorage.setItem("tracking", sessionStorage.getItem("tracking") || "UNKNOWN");
+    showAlertPopup("❌ ไม่สามารถเปิดกล้องได้", true);
     await stopCameraSafely();
   }finally{
     isStartingCamera = false;
@@ -575,10 +606,35 @@ document.getElementById('popupScanOrManualBtn').onclick = scanQRCode;
   document.getElementById('popupLoading').style.display = show ? 'flex' : 'none';
 }
 
-  document.getElementById('manualCode').addEventListener('focus', () => {
-  stopCameraSafely();
+  document.getElementById('manualCode').addEventListener('focus', async () => {
+  await stopCameraSafely();
+  document.getElementById('reader').style.display = 'none';
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('message').style.display = 'none';
 });
-  
+
+document.getElementById('btnBackToCamera').onclick = async () => {
+  if(!guardFlowOrRestart()) return;
+  touchFlow();
+
+  // ให้กลับมาเริ่มสแกนใหม่ได้
+  isScanned = false;
+
+  // ซ่อน keyboard
+  document.getElementById('manualCode').blur();
+
+  // (ถ้าอยากซ่อน manualInput ตอนกลับไปใช้กล้อง ให้เปิดบรรทัดนี้)
+  // document.getElementById('manualInput').style.display = 'none';
+
+  // เปิด UI กล้องกลับ
+  document.getElementById('reader').style.display = 'block';
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('message').style.display = 'block';
+
+  await stopCameraSafely();
+  await main();
+};
+
     //manual + submit
 document.getElementById('manualSubmit').onclick=async ()=>{
    if(!guardFlowOrRestart()) return;
@@ -605,6 +661,7 @@ document.getElementById('manualSubmit').onclick=async ()=>{
   }
 };
 
+  
   
 </script>
 </body>
