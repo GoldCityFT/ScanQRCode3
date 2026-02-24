@@ -492,45 +492,46 @@ async function processCode(code){
   isScanned = true;         // ล็อคทันที (ทั้ง scan+manual)
 
   await stopCameraSafely(); // หยุดกล้อง ลดสแกนซ้ำ/ค้าง
-  
+
+  // กันเคยทำรายการแล้ว
   const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
   if(scannedCodes.includes(code)) {
-    showAlertPopup("⚠️ คุณเคยบันทึกข้อมูลนี้แล้ว", true);
+   await showAlertPopup("⚠️ คุณเคยบันทึกข้อมูลนี้แล้ว", true);
     return;
   }
 
-  // บันทึกรหัสที่สแกนแล้ว แต่ยังไม่ส่งไป backend
+  // ✅ เก็บค่าปัจจุบัน แล้วไป Form3 เลย
   sessionStorage.setItem('tracking', code);
+  sessionStorage.setItem("scannedCodes", JSON.stringify([code]));
 
-  // --- ดึงข้อมูลจาก App Script ---
-  const data = await fetchTrackingData(code);
+  // ✅ ถ้า Form3 เดิม “คาดหวัง selectedRow” ให้ใส่ขั้นต่ำไว้กันมันหลอน
+  sessionStorage.setItem('selectedRow', JSON.stringify({ TrackingCode: code }));
 
-  if(data.success && data.data.length > 0){
-    // --- แสดง popup ให้เลือกข้อมูล ---
-    showPopupWithSelection(data.data, async (selectedRow) => {
-      // เมื่อผู้ใช้เลือกแถว → ส่งไป backend
-      sessionStorage.setItem('selectedRow', JSON.stringify(selectedRow));
-      try {
-        await fetch('/api/updateTracking', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tracking: selectedRow.TrackingCode })
-        });
+  // โชว์โหลดดิ้ง 
+  showLoadingPopup(true);
 
-        sessionStorage.setItem("scannedCodes", JSON.stringify([code]));
-        // --- แสดง popup บันทึกสำเร็จ ---
-        showAlertPopup("✅ บันทึกเรียบร้อย!", true);
-      } catch(err){
-        console.error('Update backend failed:', err);
-        isScanned = false; // ✅ ให้ลองใหม่ได้
-        showAlertPopup("❌ เกิดข้อผิดพลาดในการบันทึก", false);
-      }
+  try{
+    // ถ้าคุณยังต้องการยิง backend เพื่อบันทึก tracking ก็ทำได้
+    // (ถ้าไม่ต้องการ ก็ลบทั้งก้อนนี้ออกได้)
+    await fetch('/api/updateTracking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tracking: code })
     });
-  } else {
-    sessionStorage.setItem("scannedCodes", JSON.stringify([code]));
-    sessionStorage.removeItem("selectedRow");
-    showAlertPopup("❌ ไม่พบข้อมูลในระบบกรุณากรอกข้อมูล", true);
+  } catch(err){
+    console.error('Update backend failed:', err);
+    // ถ้าบันทึก backend ล้มเหลว จะให้ยังไป Form3 ไหม?
+    // - ถ้าจะ “ยังไป” ก็ไม่ต้อง throw
+    // - ถ้าจะ “หยุด” ให้แสดง error แล้วคืน UI
+    showLoadingPopup(false);
+    isScanned = false;
+    await showAlertPopup("❌ เกิดข้อผิดพลาดในการบันทึก", false);
+    return;
   }
+
+  // ✅ ไปหน้า Form3 (ไม่ต้อง showAlertPopup ก็ได้)
+  await stopCameraSafely();
+  window.location.replace("Form3.html");
 }
 
 // Scan mode
