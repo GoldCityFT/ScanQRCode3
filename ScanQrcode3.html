@@ -334,29 +334,58 @@ async function fetchTrackingData(trackingCode){
 // message = ข้อความแจ้งเตือน
 // redirect = true/false (default true)
 async function showAlertPopup(message, redirect = true){
-  // ปิด popupMode และ manualInput
-  document.getElementById('popupMode').style.display = 'none';
-  document.getElementById('manualInput').style.display = 'none';
+  const popupMode   = document.getElementById('popupMode');
+  const manualInput = document.getElementById('manualInput');
+  const reader      = document.getElementById('reader');
+  const overlay     = document.getElementById('overlay');
+  const msg         = document.getElementById('message');
 
-    // ประกาศตัวแปร popup และ text
+  // ✅ จำ state เดิมไว้ (ก่อนจะแสดง popup)
+  const prev = {
+    popupMode: popupMode.style.display,
+    manualInput: manualInput.style.display,
+    reader: reader.style.display,
+    overlay: overlay.style.display,
+    message: msg.style.display,
+  };
+
+  // ✅ ซ่อน popupMode เสมอ (ไม่อยากให้ทับกัน)
+  popupMode.style.display = 'none';
+
+  // ✅ ถ้าเป็นเคส redirect (ไปหน้า Form3) ค่อยซ่อน manual/camera ทั้งหมด
+  if(redirect){
+    manualInput.style.display = 'none';
+    reader.style.display = 'none';
+    overlay.style.display = 'none';
+    msg.style.display = 'none';
+  }
+
+  // --- แสดง popupAlert ---
   const popup = document.getElementById("popupAlert");
   const text = document.getElementById("popupAlertText");
-  
-  text.textContent = message;
-  // ปิดปุ่มเก่า
   const btnContainer = document.getElementById("popupAlertButtons");
+
+  text.textContent = message;
   btnContainer.innerHTML = "";
   popup.style.display = "flex";
 
-   setTimeout(async ()=>{
+  setTimeout(async () => {
     popup.style.display = "none";
 
-    if(!redirect) isScanned = false;
+    if(!redirect){
+      // ✅ ไม่ redirect → คืน UI กลับเหมือนเดิม
+      manualInput.style.display = prev.manualInput;
+      reader.style.display = prev.reader;
+      overlay.style.display = prev.overlay;
+      msg.style.display = prev.message;
 
-    if(redirect){
-      await stopCameraSafely();
-      window.location.replace("Form3.html");
+      isScanned = false; // ให้ลองใหม่ได้
+      return;
     }
+
+    // ✅ redirect → ไปหน้า Form3 ตามเดิม
+    await stopCameraSafely();
+    window.location.replace("Form3.html");
   }, 2000);
 }
 
