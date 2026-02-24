@@ -620,8 +620,11 @@ document.getElementById('btnBackToCamera').onclick = async () => {
   // ให้กลับมาเริ่มสแกนใหม่ได้
   isScanned = false;
 
+  const manual = document.getElementById('manualCode');
   // ซ่อน keyboard
   document.getElementById('manualCode').blur();
+  //  เคลียร์ค่าที่กรอกไว้
+  manual.value = "";
 
   // (ถ้าอยากซ่อน manualInput ตอนกลับไปใช้กล้อง ให้เปิดบรรทัดนี้)
   // document.getElementById('manualInput').style.display = 'none';
