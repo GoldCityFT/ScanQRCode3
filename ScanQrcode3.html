@@ -6,7 +6,9 @@
 <title>สแกน QR Code</title>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <style>
-/* ปรับ body / html */
+/* =========================
+   Base layout
+   ========================= */
 html, body {
   margin: 0;
   padding: 0;
@@ -14,135 +16,94 @@ html, body {
   width: 100%;
   font-family: 'Prompt', sans-serif;
   background: black;
+
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* QR Reader */
+/* =========================
+   QR Reader
+   ========================= */
 #reader {
   width: 100%;
   height: 75%;
   position: relative;
   z-index: 0;
-  display:none;
+  display: none;
 }
 
 #overlay {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: 1;
-  display:none;
+  display: none;
 }
 
 #message {
-  position: fixed; 
+  position: fixed;
   top: 20px;
   left: 0;
   width: 100%;
   text-align: center;
+
   color: white;
   font-size: clamp(1.5rem, 5vw, 2rem);
   font-weight: bold;
   text-shadow: 0 0 5px black;
+
   z-index: 2;
-  display:none;
+  display: none;
 }
 
-/* popup เลือก Scan / Manual */
-#popupMode {
-  display:flex;
-  position:fixed;
-  top:0; left:0; right:0; bottom:0;
-  background:rgba(0,0,0,0.6);
-  justify-content:center;
-  align-items:center;
-  z-index:9999;
-}
-
-#popupModeContent {
-  background:#fff;
-  padding:30px 20px;
-  border-radius:20px;
-  text-align:center;
-  font-size: clamp(18px, 4vw, 28px);
-  font-weight:bold;
-  color:#333;
-  min-width:280px;
-  max-width:400px;
-  width:90%;
-  box-shadow:0 8px 25px rgba(0,0,0,0.5);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:15px; /* ระยะห่างระหว่าง element */
-}
-
-  #popupModeContent p {
-  margin-bottom: 10px;
-  font-size: clamp(16px, 4vw, 22px);
-  color: #444;
-}
-
-  
-#popupModeContent button {
-  width:100%;
-  padding:15px 20px;
-  border:none;
-  border-radius:12px;
-  background:#00C300;
-  color:white;
-  font-size:1.1rem;
-  cursor:pointer;
-  transition: all 0.2s ease-in-out;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:8px;
-}
-
-#popupModeContent button:hover { 
-  background:#009f2b; 
-  transform: scale(1.03);
-}
-
-/* popup แจ้งเตือน / Alert */
+/* =========================
+   Popup Alert
+   ========================= */
 #popupAlert {
-  display:none;
-  position:fixed;
-  top:0; left:0; right:0; bottom:0;
-  background:rgba(0,0,0,0.6);
-  justify-content:center;
-  align-items:center;
-  z-index:9999;
+  display: none;
+  position: fixed;
+  inset: 0; /* top:0 right:0 bottom:0 left:0 */
+  background: rgba(0,0,0,0.6);
+
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
 }
 
 #popupAlertContent {
-  background:#fff;
-  padding:40px;
-  border-radius:20px;
-  text-align:center;
+  background: #fff;
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+
   font-size: clamp(20px, 5vw, 32px);
-  font-weight:bold;
-  color:#333;
-  min-width:300px;
-  max-width:90%;
-  box-shadow:0 8px 25px rgba(0,0,0,0.5);
+  font-weight: bold;
+  color: #333;
+
+  min-width: 300px;
+  max-width: 90%;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
 }
 
-/* manual input */
+/* =========================
+   Manual Input
+   ========================= */
 #manualInput {
-  display:none;
+  display: none;
   flex-direction: column;
-  align-items:center;
-  justify-content:center;
+  align-items: center;
+  justify-content: center;
+
   position: fixed;
-  bottom: 20px; /* อยู่ด้านล่าง */
+  bottom: 20px;
   left: 50%;
-  transform: translateX(-50%); /* กึ่งกลางแนวนอน */
-  z-index:5;
+  transform: translateX(-50%);
+
+  z-index: 5;
   width: 90%;
   max-width: 400px;
 }
@@ -150,25 +111,28 @@ html, body {
 #manualInput input {
   padding: 12px;
   margin-top: 8px;
+
   border-radius: 10px;
   border: 2px solid #ccc;
-  font-size: 1.4rem; /* เล็กลง */
+
+  font-size: 1.4rem;
   width: 100%;
   box-sizing: border-box;
   text-align: center;
 }
 
 #manualSubmit {
-  /*margin-top: 10px;*/
   padding: 12px;
   border: none;
   border-radius: 10px;
+
   background: #00C300;
   color: white;
-  font-size: 1.2rem; /* เล็กลง */
+
+  font-size: 1.2rem;
   font-weight: bold;
   cursor: pointer;
-  /*width: 100%;*/
+
   transition: all 0.2s ease-in-out;
 }
 
@@ -176,110 +140,39 @@ html, body {
   background: #009f2b;
   transform: scale(1.03);
 }
-
-
 </style>
 </head>
 <body>
-<div id="reader"></div>
-<div id="overlay"></div>
-<div id="message">สแกน QR Code ของคุณเป็นแนวตั้ง</div>
+  <div id="reader"></div>
+  <div id="overlay"></div>
+  <div id="message">สแกน QR Code ของคุณเป็นแนวตั้ง</div>
 
-<!-- popup เลือก Scan / Manual / Lost -->
-<div id="popupMode">
-  <div id="popupModeContent">
-<p style="font-size: 22px; font-weight: bold;">กรุณาเลือกวิธีกรอก QR Code</p>
-<button id="popupScanOrManualBtn">📦 <span>สแกนหรือกรอกรหัสพัสดุ</span></button>
-<button id="popupLostBtn">❌ <span>ไม่สามารถระบุรหัสพัสดุได้</span></button>
+  <div id="popupAlert">
+    <div id="popupAlertContent">
+      <p id="popupAlertText">ข้อความแจ้งเตือน</p>
+    </div>
   </div>
-</div>
 
-<!-- popup แจ้งเตือน -->
-<div id="popupAlert">
-  <div id="popupAlertContent">
-    <p id="popupAlertText">ข้อความแจ้งเตือน</p>
+  <div id="manualInput">
+    <p style="color:white; font-size:1.2rem; margin-bottom:10px; text-align:center;">
+      กรอกรหัสพัสดุด้านล่าง (ถ้าไม่สะดวกสแกน)
+    </p>
+    <input type="text" id="manualCode" placeholder="กรอกข้อมูลด้วยตัวเอง">
+    <div style="display:flex; gap:10px; width:100%; margin-top:10px;">
+      <button id="manualSubmit" style="flex:1;">ยืนยัน</button>
+      <button id="btnBackToCamera" style="flex:1; padding:12px; border:none; border-radius:10px; background:#555; color:white; font-size:1.2rem; font-weight:bold; cursor:pointer;">
+        กลับไปใช้กล้อง
+      </button>
+    </div>
   </div>
-</div>
 
-<!-- manual input -->
-<div id="manualInput">
- <p style="color:white; font-size:1.2rem; margin-bottom:10px; text-align:center;">
-  กรอกรหัสพัสดุด้านล่าง (ถ้าไม่สะดวกสแกน)
-</p>
-  <input type="text" id="manualCode" placeholder="กรอกข้อมูลด้วยตัวเอง">
- <div style="display:flex; gap:10px; width:100%; margin-top:10px;">
-  
-  <button id="manualSubmit" style="
-      flex:1;
-      padding:12px;
-      border:none;
-      border-radius:10px;
-      background:#00C300;
-      color:white;
-      font-size:1.2rem;
-      font-weight:bold;
-      cursor:pointer;
-  ">
-    ยืนยัน
-  </button>
-
-  <button id="btnBackToCamera" style="
-      flex:1;
-      padding:12px;
-      border:none;
-      border-radius:10px;
-      background:#555;
-      color:white;
-      font-size:1.2rem;
-      font-weight:bold;
-      cursor:pointer;
-  ">
-    กลับไปใช้กล้อง
-  </button>
-
-</div>
-</div>
-
-  <!-- popup loading -->
-<div id="popupLoading" style="
-    display:none;
-    position: fixed;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.6);
-    justify-content:center;
-    align-items:center;
-    z-index:99999;
-">
-  <div style="
-      background:#fff;
-      padding:30px 20px;
-      border-radius:20px;
-      font-size:1.5rem;
-      font-weight:bold;
-      text-align:center;
-      color:#333;
-      box-shadow:0 8px 25px rgba(0,0,0,0.5);
-  ">
-    ⏳ กำลังบันทึกข้อมูล...
-  </div>
-</div>
-  
 <script>
-  // ===== Flow guard (ScanQrcode3) =====
-const FLOW_TTL_MS = 10 * 60 * 1000; // แนะนำ 10 นาที
-const INDEX_URL = "index.html";     // ✅ ปรับชื่อไฟล์ให้ตรงของจริง (index.html / Index.html)
+const FLOW_TTL_MS = 10 * 60 * 1000;
+const INDEX_URL = "index.html";
 
-function touchFlow(){
-  sessionStorage.setItem("flow_last_touch", String(Date.now()));
-}
-
-function isFlowExpired(){
-  const last = Number(sessionStorage.getItem("flow_last_touch") || 0);
-  return !last || (Date.now() - last) > FLOW_TTL_MS;
-}
-
+function touchFlow(){ sessionStorage.setItem("flow_last_touch", String(Date.now())); }
+function isFlowExpired(){ const last = Number(sessionStorage.getItem("flow_last_touch") || 0); return !last || (Date.now() - last) > FLOW_TTL_MS; }
 function guardFlowOrRestart(){
-  // ไม่มี run id = ไม่ได้เข้าจาก Index (หรือโดนเคลียร์) → กลับไปเริ่มใหม่
   const runId = sessionStorage.getItem("flow_run_id");
   if(!runId || isFlowExpired()){
     window.location.replace(INDEX_URL);
@@ -288,199 +181,25 @@ function guardFlowOrRestart(){
   return true;
 }
 
-// โหลดหน้า / reload
-// กัน BFCache: ถ้าหน้าถูก restore จาก back/forward cache → รีสตาร์ทหน้านี้ใหม่
-window.addEventListener("pageshow", (e) => {
-  if (e.persisted) {
-    window.location.replace("ScanQrcode3.html");
-    return;
-  }
-
-  if(!guardFlowOrRestart()) return;
-  touchFlow();
-
-  const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
-  if(scannedCodes.length > 0){
-  window.location.replace(INDEX_URL);
-  return;
-} else {
-    document.getElementById('popupMode').style.display = 'flex';
-  }
-});
-
-// เวลาใกล้ปิด/ซ่อนหน้า → touch ไว้หน่อย (กัน TTL ตัดกลางอากาศแบบงง ๆ)
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") touchFlow();
-});
-  
 let isScanned = false;
 let html5QrCode = null;
+let isStartingCamera = false;
+let isCameraRunning = false;
 
-// message = ข้อความแจ้งเตือน
-// redirect = true/false (default true)
-async function showAlertPopup(message, redirect = true){
-  const popupMode   = document.getElementById('popupMode');
-  const manualInput = document.getElementById('manualInput');
-  const reader      = document.getElementById('reader');
-  const overlay     = document.getElementById('overlay');
-  const msg         = document.getElementById('message');
-
-  // ✅ จำ state เดิมไว้ (ก่อนจะแสดง popup)
-  const prev = {
-    popupMode: popupMode.style.display,
-    manualInput: manualInput.style.display,
-    reader: reader.style.display,
-    overlay: overlay.style.display,
-    message: msg.style.display,
-  };
-
-  // ✅ ซ่อน popupMode เสมอ (ไม่อยากให้ทับกัน)
-  popupMode.style.display = 'none';
-
-  // ✅ ถ้าเป็นเคส redirect (ไปหน้า Form3) ค่อยซ่อน manual/camera ทั้งหมด
-  if(redirect){
-    manualInput.style.display = 'none';
-    reader.style.display = 'none';
-    overlay.style.display = 'none';
-    msg.style.display = 'none';
-  }
-
-  // --- แสดง popupAlert ---
+async function showAlertPopup(message, redirect = false){
   const popup = document.getElementById("popupAlert");
   const text = document.getElementById("popupAlertText");
-
   text.textContent = message;
   popup.style.display = "flex";
 
   setTimeout(async () => {
     popup.style.display = "none";
-
-    if(!redirect){
-      // ✅ ไม่ redirect → คืน UI กลับเหมือนเดิม
-      manualInput.style.display = prev.manualInput;
-      reader.style.display = prev.reader;
-      overlay.style.display = prev.overlay;
-      msg.style.display = prev.message;
-
-      isScanned = false; // ให้ลองใหม่ได้
-      return;
+    if(redirect){
+      await stopCameraSafely();
+      window.location.replace("Form3.html");
     }
-
-    // ✅ redirect → ไปหน้า Form3 ตามเดิม
-    await stopCameraSafely();
-    window.location.replace("Form3.html");
   }, 2000);
 }
-
-  // กดปุ่ม Lost → ไปหน้า Losstrackingcode.html
-document.getElementById('popupLostBtn').onclick = async () => {
- if(!guardFlowOrRestart()) return;
-  touchFlow();
-
-    //  กัน race condition / callback ยิงซ้ำ
-  isScanned = true;
-  isStartingCamera = false;
-  isCameraRunning = false;
-  await stopCameraSafely();
-
-  // ระบุว่าไม่มี tracking
-  sessionStorage.setItem("tracking", "UNKNOWN");
-
-  // กันสแกนซ้ำ
-  sessionStorage.setItem("scannedCodes", JSON.stringify(["UNKNOWN"]));
-
-  showAlertPopup("ℹ️ ไม่สามารถระบุรหัสพัสดุได้ กำลังพาไปกรอกข้อมูล…", true);
-};
-  
-// ใช้กับทั้ง QR และ Manual
-async function processCode(code){
-  if(!guardFlowOrRestart()) return;
-  touchFlow();
-
-  code = (code || "").trim();
-  if(!code){
-    await showAlertPopup("❌ กรุณากรอกข้อมูลด้วย", false);
-    return;
-  }
-  
-  // กันซ้ำจาก callback กล้อง
-  if(isScanned) return;     // กันซ้ำ
-  isScanned = true;         // ล็อคทันที (ทั้ง scan+manual)
-
-  await stopCameraSafely(); // หยุดกล้อง ลดสแกนซ้ำ/ค้าง
-
-  // กันเคยทำรายการแล้ว
-  const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
-  if (scannedCodes.includes(code)) {
-  sessionStorage.setItem('tracking', code); 
-  await showAlertPopup("⚠️ คุณเคยบันทึกข้อมูลนี้แล้ว", true);
-  return;
-}
-
-  // ✅ เก็บค่าปัจจุบัน แล้วไป Form3 เลย
-  sessionStorage.setItem('tracking', code);
-  sessionStorage.setItem("scannedCodes", JSON.stringify([code]));
-
-  // โชว์โหลดดิ้ง 
-  showLoadingPopup(true);
-
-  try{
-    // ถ้าคุณยังต้องการยิง backend เพื่อบันทึก tracking ก็ทำได้
-    // (ถ้าไม่ต้องการ ก็ลบทั้งก้อนนี้ออกได้)
-    await fetch('/api/updateTracking', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tracking: code })
-    });
-  } catch(err){
-    console.error('Update backend failed:', err);
-    // ถ้าบันทึก backend ล้มเหลว จะให้ยังไป Form3 ไหม?
-    // - ถ้าจะ “ยังไป” ก็ไม่ต้อง throw
-    // - ถ้าจะ “หยุด” ให้แสดง error แล้วคืน UI
-    showLoadingPopup(false);
-    isScanned = false;
-    await showAlertPopup("❌ เกิดข้อผิดพลาดในการบันทึก", false);
-    return;
-  }
-
-  //  ปิดก่อนเปลี่ยนหน้า
-  showLoadingPopup(false);   
-  //  ไปหน้า Form3 (ไม่ต้อง showAlertPopup ก็ได้)
-  await stopCameraSafely();
-  window.location.replace("Form3.html");
-}
-
-// Scan mode
-async function scanQRCode() {
-  if(!guardFlowOrRestart()) return;
-  touchFlow();
-  
-  const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
-  if(scannedCodes.length > 0){
-  window.location.replace(INDEX_URL);
-  return;
-}
-
-  document.getElementById('popupMode').style.display = 'none';
-  document.getElementById('reader').style.display = 'block';
-  document.getElementById('overlay').style.display = 'block';
-  document.getElementById('message').style.display = 'block';
-
-  // โชว์ Manual input ด้วย (จะซ่อนตอนไม่ใช้)
-  document.getElementById('manualInput').style.display = 'flex';
-  
- 
-  isScanned = false;
-
-  // เริ่มกล้อง (มี guard กันซ้อนแล้ว)
-  await stopCameraSafely();
-  await main(); 
-  
-}
-
-// เพิ่ม flag: คุมสถานะการทำงานชัด ๆ
-let isStartingCamera = false;
-let isCameraRunning = false;
 
 async function stopCameraSafely(){
   try{
@@ -495,59 +214,76 @@ async function stopCameraSafely(){
     isStartingCamera = false;
   }
 }
-// ออกจากหน้า = หยุดกล้อง ลดเคสเปิดใหม่แล้วกล้องไม่มา
-window.addEventListener("pagehide", () => {
-  stopCameraSafely();
-});
-  
-// QR function
-async function main() {
+window.addEventListener("pagehide", () => stopCameraSafely());
+
+async function processCode(code){
   if(!guardFlowOrRestart()) return;
   touchFlow();
 
-  if(isStartingCamera || isCameraRunning) return; // ✅ กัน start ซ้ำ
+  code = (code || "").trim();
+  if(!code){
+    await showAlertPopup("❌ กรุณากรอกข้อมูลด้วย", false);
+    return;
+  }
+
+  if(isScanned) return;
+  isScanned = true;
+
+  sessionStorage.setItem('tracking', code);
+  await stopCameraSafely();
+  window.location.replace("Form3.html");
+}
+
+async function main(){
+  if(!guardFlowOrRestart()) return;
+  touchFlow();
+
+  if(isStartingCamera || isCameraRunning) return;
   isStartingCamera = true;
 
   try{
     if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
 
-    const config = {
-      fps: 10,
-      qrbox: (w,h)=>{ const s=w*0.6; return {width:s,height:s}; }
-    };
+    const config = { fps: 10, qrbox: (w,h)=>{ const s=w*0.6; return {width:s,height:s}; } };
 
     await html5QrCode.start(
       { facingMode: "environment" },
       config,
-     async (qrCodeMessage) => {
-      touchFlow();
-      await processCode(qrCodeMessage);
-    },
-      (errorMessage) => { /* เงียบไว้ ไม่ต้อง log เยอะ */ }
+      async (qrCodeMessage) => { touchFlow(); await processCode(qrCodeMessage); },
+      () => {}
     );
 
     isCameraRunning = true;
-
   }catch(err){
     console.error("Camera start error:", err);
-    sessionStorage.setItem("tracking", sessionStorage.getItem("tracking") || "UNKNOWN");
-    showAlertPopup("❌ ไม่สามารถเปิดกล้องได้", true);
+    await showAlertPopup("❌ ไม่สามารถเปิดกล้องได้", false);
     await stopCameraSafely();
   }finally{
     isStartingCamera = false;
   }
 }
 
+// ✅ เปิดหน้าแล้วเริ่มสแกนทันที
+window.addEventListener("pageshow", async (e) => {
+  if (e.persisted) { window.location.replace("ScanQrcode3.html"); return; }
+  if(!guardFlowOrRestart()) return;
+  touchFlow();
 
-  
-  // ปุ่มเลือก Scan / Manual
-document.getElementById('popupScanOrManualBtn').onclick = scanQRCode;
+  document.getElementById('reader').style.display = 'block';
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('message').style.display = 'block';
+  document.getElementById('manualInput').style.display = 'flex';
 
-  function showLoadingPopup(show = true){
-  document.getElementById('popupLoading').style.display = show ? 'flex' : 'none';
-}
+  isScanned = false;
+  await stopCameraSafely();
+  await main();
+});
 
-  document.getElementById('manualCode').addEventListener('focus', async () => {
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") touchFlow();
+});
+
+document.getElementById('manualCode').addEventListener('focus', async () => {
   await stopCameraSafely();
   document.getElementById('reader').style.display = 'none';
   document.getElementById('overlay').style.display = 'none';
@@ -558,19 +294,11 @@ document.getElementById('btnBackToCamera').onclick = async () => {
   if(!guardFlowOrRestart()) return;
   touchFlow();
 
-  // ให้กลับมาเริ่มสแกนใหม่ได้
   isScanned = false;
-
   const manual = document.getElementById('manualCode');
-  // ซ่อน keyboard
   manual.blur();
-  //  เคลียร์ค่าที่กรอกไว้
   manual.value = "";
 
-  // (ถ้าอยากซ่อน manualInput ตอนกลับไปใช้กล้อง ให้เปิดบรรทัดนี้)
-  // document.getElementById('manualInput').style.display = 'none';
-
-  // เปิด UI กล้องกลับ
   document.getElementById('reader').style.display = 'block';
   document.getElementById('overlay').style.display = 'block';
   document.getElementById('message').style.display = 'block';
@@ -579,25 +307,17 @@ document.getElementById('btnBackToCamera').onclick = async () => {
   await main();
 };
 
-    //manual + submit
-document.getElementById('manualSubmit').onclick=async ()=>{
-   if(!guardFlowOrRestart()) return;
+document.getElementById('manualSubmit').onclick = async () => {
+  if(!guardFlowOrRestart()) return;
   touchFlow();
-  
-    if (isScanned) {
-  const last = sessionStorage.getItem("tracking") || "UNKNOWN";
-  sessionStorage.setItem("tracking", last);
-  showAlertPopup("⚠️ คุณได้บันทึกข้อมูลแล้ว", true);
-  return;
-  }
-    const code = document.getElementById('manualCode').value.trim();
-    if(!code){
+
+  const code = document.getElementById('manualCode').value.trim();
+  if(!code){
     showAlertPopup("❌ กรุณากรอกข้อมูลด้วย", false);
     return;
   }
-   await processCode(code);
+  await processCode(code);
 };
-
 </script>
 </body>
 </html>
