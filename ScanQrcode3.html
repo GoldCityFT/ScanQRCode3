@@ -33,12 +33,9 @@ html, body {
   display: none;
 }
 
-#overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+#overlay{
+  position: fixed;
+  inset: 0;
   pointer-events: none;
   z-index: 1;
   display: none;
@@ -140,6 +137,39 @@ html, body {
   background: #009f2b;
   transform: scale(1.03);
 }
+
+/* =========================
+   Buttons
+   ========================= */
+.btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-green {
+  background: #00C300;
+  color: white;
+}
+.btn-green:hover {
+  background: #009f2b;
+  transform: scale(1.03);
+}
+
+.btn-gray {
+  background: #555;
+  color: white;
+}
+.btn-gray:hover {
+  background: #444;
+  transform: scale(1.03);
+}
+   
 </style>
 </head>
 <body>
@@ -157,12 +187,13 @@ html, body {
     <p style="color:white; font-size:1.2rem; margin-bottom:10px; text-align:center;">
       กรอกรหัสพัสดุด้านล่าง (ถ้าไม่สะดวกสแกน)
     </p>
-    <input type="text" id="manualCode" placeholder="กรอกข้อมูลด้วยตัวเอง">
-    <div style="display:flex; gap:10px; width:100%; margin-top:10px;">
-      <button id="manualSubmit" style="flex:1;">ยืนยัน</button>
-      <button id="btnBackToCamera" style="flex:1; padding:12px; border:none; border-radius:10px; background:#555; color:white; font-size:1.2rem; font-weight:bold; cursor:pointer;">
-        กลับไปใช้กล้อง
-      </button>
+    <input type="text" id="manualCode"placeholder="กรอกข้อมูลด้วยตัวเอง">
+    <div style="display:flex; 
+       gap:10px; 
+       width:100%;
+       margin-top:10px;">
+      <button id="manualSubmit" class="btn-green">ยืนยัน</button>
+      <button id="btnBackToCamera" class="btn-gray">กลับไปใช้กล้อง</button>
     </div>
   </div>
 
@@ -216,6 +247,7 @@ async function stopCameraSafely(){
 }
 window.addEventListener("pagehide", () => stopCameraSafely());
 
+let isNavigating = false;
 async function processCode(code){
   if(!guardFlowOrRestart()) return;
   touchFlow();
@@ -226,10 +258,12 @@ async function processCode(code){
     return;
   }
 
-  if(isScanned) return;
-  isScanned = true;
-
+  // เซ็ตค่า "ล่าสุด" เสมอ
   sessionStorage.setItem('tracking', code);
+
+  if(isNavigating) return;   // กันเปลี่ยนหน้าซ้ำ
+  isNavigating = true;
+
   await stopCameraSafely();
   window.location.replace("Form3.html");
 }
@@ -288,6 +322,10 @@ document.getElementById('manualCode').addEventListener('focus', async () => {
   document.getElementById('reader').style.display = 'none';
   document.getElementById('overlay').style.display = 'none';
   document.getElementById('message').style.display = 'none';
+});
+   // ✅ กัน TTL หมดตอนพิมพ์นาน ๆ
+document.getElementById('manualCode').addEventListener('input', () => {
+  touchFlow();
 });
 
 document.getElementById('btnBackToCamera').onclick = async () => {
