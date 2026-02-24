@@ -198,7 +198,6 @@ html, body {
 <div id="popupAlert">
   <div id="popupAlertContent">
     <p id="popupAlertText">ข้อความแจ้งเตือน</p>
-    <div id="popupAlertButtons"></div> <!-- สำหรับปุ่มเลือก Customer -->
   </div>
 </div>
 
@@ -302,8 +301,9 @@ window.addEventListener("pageshow", (e) => {
 
   const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
   if(scannedCodes.length > 0){
-    showAlertPopup("⚠️ คุณเคยบันทึกข้อมูลนี้แล้ว", true);
-  } else {
+  window.location.replace(INDEX_URL);
+  return;
+} else {
     document.getElementById('popupMode').style.display = 'flex';
   }
 });
@@ -315,21 +315,6 @@ document.addEventListener("visibilitychange", () => {
   
 let isScanned = false;
 let html5QrCode = null;
-let currentMode = null;
-const appsScriptURL = "https://script.google.com/macros/s/AKfycbxWOLfJ1MIeN_3RmZ1slHlSD6omtSmJUR1EemXyl8Gf_ykI8XY3oSLg75HNmH_fM9w/exec";
-
-// fetch ข้อมูลจาก Apps Script
-// --- ฟังก์ชัน fetch ใช้งานภายใน processCode ---
-async function fetchTrackingData(trackingCode){
-  try {
-    const res = await fetch(`${appsScriptURL}?tracking=${encodeURIComponent(trackingCode)}`);
-    const data = await res.json();
-    return data;
-  } catch(err) {
-    console.error("Fetch error:", err);
-    return { success:false, data:[] };
-  }
-}
 
 // message = ข้อความแจ้งเตือน
 // redirect = true/false (default true)
@@ -363,10 +348,8 @@ async function showAlertPopup(message, redirect = true){
   // --- แสดง popupAlert ---
   const popup = document.getElementById("popupAlert");
   const text = document.getElementById("popupAlertText");
-  const btnContainer = document.getElementById("popupAlertButtons");
 
   text.textContent = message;
-  btnContainer.innerHTML = "";
   popup.style.display = "flex";
 
   setTimeout(async () => {
@@ -400,9 +383,6 @@ document.getElementById('popupLostBtn').onclick = async () => {
   isCameraRunning = false;
   await stopCameraSafely();
 
-  // เคลียร์ข้อมูลที่อาจค้างจากการเลือก customer (กันหลอน)
-  sessionStorage.removeItem("selectedRow");
-
   // ระบุว่าไม่มี tracking
   sessionStorage.setItem("tracking", "UNKNOWN");
 
@@ -411,70 +391,6 @@ document.getElementById('popupLostBtn').onclick = async () => {
 
   showAlertPopup("ℹ️ ไม่สามารถระบุรหัสพัสดุได้ กำลังพาไปกรอกข้อมูล…", true);
 };
-
-
-function showPopupWithSelection(dataArray, callback){
-  
-  const popup = document.getElementById("popupAlert");
-  const text = document.getElementById("popupAlertText");
-  const btnContainer = document.getElementById("popupAlertButtons");
-
-  // ข้อความนำ
-  text.textContent = "กรุณาเลือกข้อมูลของท่าน";
-
-  // ล้างปุ่มเก่า
-  btnContainer.innerHTML = "";
-
-  // ปุ่มสำหรับแต่ละ Customer
-  dataArray.forEach((row) => {
-    const btn = document.createElement("button");
-    btn.style.margin = "5px 0";
-    btn.style.width = "100%";
-    btn.style.padding = "10px";
-    btn.style.fontSize = "1rem";
-
-     // ใช้ชื่อ field จริงจาก Apps Script
-    const name = row.CustomerName || row.Name || '';
-    const code = row.BillingPostCode || row.PostCode || '';
-    const tracking = row.TrackingCode || row.Code || '';
-    
-   btn.textContent = `${name}  ${code}  ${tracking}`;
-    btn.onclick = () => {
-    popup.style.display = "none";
-    if(callback) callback(row);
-  };
-  btnContainer.appendChild(btn);
-});
-
-  // ปุ่ม "ไม่พบข้อมูล"
-  const skipBtn = document.createElement("button");
-  skipBtn.style.marginTop = "10px";
-  skipBtn.style.width = "100%";
-  skipBtn.style.padding = "10px";
-  skipBtn.style.background = "#FF5722";
-  skipBtn.style.color = "white";
-  skipBtn.style.fontWeight = "bold";
-  skipBtn.textContent = "ไม่มีข้อมูลที่ตรงกัน";
-  
-  skipBtn.onclick = async () => {
-  popup.style.display = "none";
-    
- // 🔒 กัน race condition / callback ยิงซ้ำ
-  isScanned = true;
-  isStartingCamera = false;
-  isCameraRunning = false;
-  await stopCameraSafely();
-    
-  sessionStorage.removeItem("selectedRow");
-  const t = sessionStorage.getItem("tracking") || "UNKNOWN"; // ปกติจะมีอยู่แล้ว
-  sessionStorage.setItem("scannedCodes", JSON.stringify([t]));
-
-  showAlertPopup("ℹ️ ไม่พบข้อมูลที่ตรงกัน กำลังพาไปกรอกข้อมูล…", true);
-};
-  btnContainer.appendChild(skipBtn);
-
-  popup.style.display = "flex";
-  }
   
 // ใช้กับทั้ง QR และ Manual
 async function processCode(code){
@@ -495,17 +411,15 @@ async function processCode(code){
 
   // กันเคยทำรายการแล้ว
   const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
-  if(scannedCodes.includes(code)) {
-   await showAlertPopup("⚠️ คุณเคยบันทึกข้อมูลนี้แล้ว", true);
-    return;
-  }
+  if (scannedCodes.includes(code)) {
+  sessionStorage.setItem('tracking', code); 
+  await showAlertPopup("⚠️ คุณเคยบันทึกข้อมูลนี้แล้ว", true);
+  return;
+}
 
   // ✅ เก็บค่าปัจจุบัน แล้วไป Form3 เลย
   sessionStorage.setItem('tracking', code);
   sessionStorage.setItem("scannedCodes", JSON.stringify([code]));
-
-  // ✅ ถ้า Form3 เดิม “คาดหวัง selectedRow” ให้ใส่ขั้นต่ำไว้กันมันหลอน
-  sessionStorage.setItem('selectedRow', JSON.stringify({ TrackingCode: code }));
 
   // โชว์โหลดดิ้ง 
   showLoadingPopup(true);
@@ -529,7 +443,9 @@ async function processCode(code){
     return;
   }
 
-  // ✅ ไปหน้า Form3 (ไม่ต้อง showAlertPopup ก็ได้)
+  //  ปิดก่อนเปลี่ยนหน้า
+  showLoadingPopup(false);   
+  //  ไปหน้า Form3 (ไม่ต้อง showAlertPopup ก็ได้)
   await stopCameraSafely();
   window.location.replace("Form3.html");
 }
@@ -541,9 +457,9 @@ async function scanQRCode() {
   
   const scannedCodes = JSON.parse(sessionStorage.getItem('scannedCodes') || '[]');
   if(scannedCodes.length > 0){
-    showAlertPopup("⚠️ คุณทำรายการนี้ไปแล้ว", true);
-    return;
-  }
+  window.location.replace(INDEX_URL);
+  return;
+}
 
   document.getElementById('popupMode').style.display = 'none';
   document.getElementById('reader').style.display = 'block';
@@ -553,7 +469,7 @@ async function scanQRCode() {
   // โชว์ Manual input ด้วย (จะซ่อนตอนไม่ใช้)
   document.getElementById('manualInput').style.display = 'flex';
   
-  currentMode = "scan";
+ 
   isScanned = false;
 
   // เริ่มกล้อง (มี guard กันซ้อนแล้ว)
@@ -603,15 +519,10 @@ async function main() {
     await html5QrCode.start(
       { facingMode: "environment" },
       config,
-    async (qrCodeMessage) => {
-      showLoadingPopup(true);
-      try{
+     async (qrCodeMessage) => {
       touchFlow();
       await processCode(qrCodeMessage);
-    } finally {
-      showLoadingPopup(false);
-    }
-  },
+    },
       (errorMessage) => { /* เงียบไว้ ไม่ต้อง log เยอะ */ }
     );
 
@@ -673,25 +584,18 @@ document.getElementById('manualSubmit').onclick=async ()=>{
    if(!guardFlowOrRestart()) return;
   touchFlow();
   
-    if(isScanned){
-    showAlertPopup("⚠️ คุณได้บันทึกข้อมูลแล้ว", false);
-    return;
+    if (isScanned) {
+  const last = sessionStorage.getItem("tracking") || "UNKNOWN";
+  sessionStorage.setItem("tracking", last);
+  showAlertPopup("⚠️ คุณได้บันทึกข้อมูลแล้ว", true);
+  return;
   }
-  const code = document.getElementById('manualCode').value.trim();
-  if(!code){
+    const code = document.getElementById('manualCode').value.trim();
+    if(!code){
     showAlertPopup("❌ กรุณากรอกข้อมูลด้วย", false);
     return;
   }
-
-  // แสดง popup กำลังประมวลผล
-  showLoadingPopup(true);
-
-  try{
-    await processCode(code);
-  } finally {
-    // ปิด popup หลังทำงานเสร็จ
-    showLoadingPopup(false);
-  }
+   await processCode(code);
 };
 
 </script>
