@@ -303,7 +303,7 @@ async function main(){
   }
 }
 
-// ✅ เปิดหน้าแล้วเริ่มสแกนทันที
+// เปิดหน้าแล้วเริ่มสแกนทันที
 window.addEventListener("pageshow", async (e) => {
   if (e.persisted) { window.location.replace("ScanQrcode3.html"); return; }
   if(!guardFlowOrRestart()) return;
@@ -329,7 +329,7 @@ document.getElementById('manualCode').addEventListener('focus', async () => {
   document.getElementById('overlay').style.display = 'none';
   document.getElementById('message').style.display = 'none';
 });
-   // ✅ กัน TTL หมดตอนพิมพ์นาน ๆ
+   // กัน TTL หมดตอนพิมพ์นาน ๆ
 document.getElementById('manualCode').addEventListener('input', () => {
   touchFlow();
 });
