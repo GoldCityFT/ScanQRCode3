@@ -1,329 +1,214 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>แบบสอบถามลูกค้า</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Form3</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
- <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+  <style>
+    body{
+      font-family:sans-serif; margin:0; padding:20px; background:#f0f0f0;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    h2{ margin:0 0 16px; font-size:2rem; text-align:center; }
+    form{
+      display:none; background:#fff; padding:20px; border-radius:10px;
+      max-width:420px; width:100%; box-shadow:0 5px 10px rgba(0,0,0,.1);
+      box-sizing:border-box;
+    }
+    label{ display:block; margin-top:14px; font-weight:bold; }
+    input{
+      width:100%; padding:10px; margin-top:6px; border-radius:6px;
+      border:1px solid #ccc; font-size:1rem; box-sizing:border-box;
+    }
+    button{
+      margin-top:18px; width:100%; padding:12px; background:#00C300;
+      border:none; border-radius:6px; color:#fff; font-size:1rem; cursor:pointer;
+    }
+    button:hover{ background:#009f2b; }
+
+    #loadingModal{
+      display:flex; position:fixed; inset:0; background:rgba(0,0,0,.5);
+      justify-content:center; align-items:center; z-index:2000;
+    }
+    #loadingModal > div{
+      background:#fff; padding:18px; border-radius:10px; text-align:center;
+      width:90%; max-width:320px; box-sizing:border-box;
     }
 
-    h2 {
-      margin-bottom: 20px;
-      font-size: 2rem;
-      text-align: center;
+    #modal{
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.7);
+      justify-content:center; align-items:center; z-index:2100;
     }
-
-    form {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 400px;
-      width: 100%;
-      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-      box-sizing: border-box;
+    #modal > div{
+      background:#fff; padding:18px; border-radius:10px; text-align:center;
+      width:90%; max-width:320px; box-sizing:border-box;
     }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-      box-sizing: border-box;
-    }
-
-    button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 12px;
-      background: #00C300;
-      border: none;
-      border-radius: 5px;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #009f2b;
-    }
-
-    /* Modal popup */
-    #modal {
-      display: none;
-      position: fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background: rgba(0,0,0,0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    #modal div {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-      max-width: 300px;
-      width: 90%;
-      box-sizing: border-box;
-    }
-
-    /* Responsive สำหรับมือถือ */
-    @media (max-width: 768px) {
-      h2 {
-        font-size: 1.8rem;
-      }
-      form {
-        padding: 15px;
-        max-width: 90%;
-      }
-      input, select, button {
-        font-size: 1rem;
-        padding: 10px;
-      }
-      #modal div {
-        padding: 15px;
-      }
-    }
-
-
-   form {
-  display: none; /* ซ่อนก่อน */
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 400px;
-  width: 100%;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-  box-sizing: border-box;
-}
-
-   
   </style>
 </head>
 <body>
-<h2>แบบสอบถาม</h2>
+  <h2>กรอกข้อมูล</h2>
 
-<form id="surveyForm" action="https://script.google.com/macros/s/AKfycbyklv9SQB7L2WdrTjHRuwZkm9UB0zime9s8v8gutC2p3VcVPQB1Pd3I8rZoQA_v63zx/exec" method="POST" target="hidden_iframe">
-  <input type="hidden" name="token" value="Gl0D$Yt1@">
-  <input type="hidden" id="UserId" name="UserId">
-  <input type="hidden" id="Tracking" name="Tracking">
+  <form id="surveyForm"
+    action="https://script.google.com/macros/s/AKfycbyklv9SQB7L2WdrTjHRuwZkm9UB0zime9s8v8gutC2p3VcVPQB1Pd3I8rZoQA_v63zx/exec"
+    method="POST"
+    target="hidden_iframe">
 
-  <label>ชื่อ - นามสกุล </label>
-  <input type="text" name="DisplayName" required placeholder="ต้องระบุ">
+    <!-- ต้องมีเหมือนเดิม -->
+    <input type="hidden" name="token" value="Gl0D$Yt1@" />
+    <input type="hidden" id="UserId" name="UserId" />
 
-  <label>ที่อยู่ (ถ้ามี)</label>
-  <input type="text" name="Location" >
+    <!-- ✅ 1) Tracking -->
+    <label>รหัสหน้ากล่องพัสดุ (Tracking No.)</label>
+    <input type="text" id="Tracking" name="Tracking" required placeholder="ต้องระบุ" />
 
-  
- <!-- 
-  <label>เบอร์โทร</label>
-  <input type="number" name="Phone" required placeholder="ต้องระบุ">  
- -->
+    <!-- ✅ 2) จังหวัด (map ไป Location เพื่อไม่แก้ App Script) -->
+    <label>จังหวัด</label>
+    <input
+      type="text"
+      id="Province"
+      name="Location"
+      list="provinceList"
+      required
+      placeholder="พิมพ์เพื่อค้นหา เช่น ส"
+      autocomplete="off"
+    />
+    <datalist id="provinceList">
+      <option value="กระบี่"></option>
+      <option value="กรุงเทพมหานคร"></option>
+      <option value="กาญจนบุรี"></option>
+      <option value="กาฬสินธุ์"></option>
+      <option value="กำแพงเพชร"></option>
+      <option value="ขอนแก่น"></option>
+      <option value="จันทบุรี"></option>
+      <option value="ฉะเชิงเทรา"></option>
+      <option value="ชลบุรี"></option>
+      <option value="ชัยนาท"></option>
+      <option value="ชัยภูมิ"></option>
+      <option value="ชุมพร"></option>
+      <option value="เชียงราย"></option>
+      <option value="เชียงใหม่"></option>
+      <option value="ตรัง"></option>
+      <option value="ตราด"></option>
+      <option value="ตาก"></option>
+      <option value="นครนายก"></option>
+      <option value="นครปฐม"></option>
+      <option value="นครพนม"></option>
+      <option value="นครราชสีมา"></option>
+      <option value="นครศรีธรรมราช"></option>
+      <option value="นครสวรรค์"></option>
+      <option value="นนทบุรี"></option>
+      <option value="นราธิวาส"></option>
+      <option value="น่าน"></option>
+      <option value="บึงกาฬ"></option>
+      <option value="บุรีรัมย์"></option>
+      <option value="ปทุมธานี"></option>
+      <option value="ประจวบคีรีขันธ์"></option>
+      <option value="ปราจีนบุรี"></option>
+      <option value="ปัตตานี"></option>
+      <option value="พระนครศรีอยุธยา"></option>
+      <option value="พะเยา"></option>
+      <option value="พังงา"></option>
+      <option value="พัทลุง"></option>
+      <option value="พิจิตร"></option>
+      <option value="พิษณุโลก"></option>
+      <option value="เพชรบุรี"></option>
+      <option value="เพชรบูรณ์"></option>
+      <option value="แพร่"></option>
+      <option value="ภูเก็ต"></option>
+      <option value="มหาสารคาม"></option>
+      <option value="มุกดาหาร"></option>
+      <option value="แม่ฮ่องสอน"></option>
+      <option value="ยะลา"></option>
+      <option value="ยโสธร"></option>
+      <option value="ร้อยเอ็ด"></option>
+      <option value="ระนอง"></option>
+      <option value="ระยอง"></option>
+      <option value="ราชบุรี"></option>
+      <option value="ลพบุรี"></option>
+      <option value="ลำปาง"></option>
+      <option value="ลำพูน"></option>
+      <option value="เลย"></option>
+      <option value="ศรีสะเกษ"></option>
+      <option value="สกลนคร"></option>
+      <option value="สงขลา"></option>
+      <option value="สตูล"></option>
+      <option value="สมุทรปราการ"></option>
+      <option value="สมุทรสงคราม"></option>
+      <option value="สมุทรสาคร"></option>
+      <option value="สระแก้ว"></option>
+      <option value="สระบุรี"></option>
+      <option value="สิงห์บุรี"></option>
+      <option value="สุโขทัย"></option>
+      <option value="สุพรรณบุรี"></option>
+      <option value="สุราษฎร์ธานี"></option>
+      <option value="สุรินทร์"></option>
+      <option value="หนองคาย"></option>
+      <option value="หนองบัวลำภู"></option>
+      <option value="อ่างทอง"></option>
+      <option value="อำนาจเจริญ"></option>
+      <option value="อุดรธานี"></option>
+      <option value="อุตรดิตถ์"></option>
+      <option value="อุทัยธานี"></option>
+      <option value="อุบลราชธานี"></option>
+    </datalist>
 
-  <label>รหัสไปรษณีย์</label>
-  <input type="text" name="PostCode" required placeholder="ต้องระบุ">
+    <button type="submit">Submit</button>
+  </form>
 
-  <label>สินค้าที่ซื้อล่าสุด</label>
-  <select id="itemSelect" name="ItemName" required>
-    <option value="">-- เลือกสินค้า --</option>
-    <option value="รองเท้าแตะ">รองเท้าแตะ</option>
-    <option value="รองเท้าผ้าใบ">รองเท้าผ้าใบ</option>
-  </select>
+  <iframe name="hidden_iframe" style="display:none;"></iframe>
 
-  <label>สี</label>
-  <select id="colorSelect" name="Color" required>
-    <option value="">-- เลือกสี --</option>
-  </select>
+  <div id="loadingModal"><div><p>กรุณารอสักครู่...</p></div></div>
 
-  <label>ขนาด (ถ้ามี)</label>
-  <select name="Size">
-    <option value="">-- เลือกขนาด --</option>
-    <option value="39">39</option>
-    <option value="40">40</option>
-    <option value="41">41</option>
-    <option value="42">42</option>
-    <option value="43">43</option>
-    <option value="44">44</option>
-    <option value="45">45</option>
-  </select>
-  
- <!-- 
-  <label>Invoice (ถ้ามี)</label>
-  <input type="text" name="Invoice" placeholder="เช่น INV1234">
--->
-  
-  <button type="submit">Submit</button>
-</form>
-
-<!-- ใช้ iframe ซ่อนการโหลดหน้าใหม่ -->
-<iframe name="hidden_iframe" style="display:none;"></iframe>
-
-<!-- popup modal -->
-<div id="modal" style="
-  display:none;
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background: rgba(0,0,0,0.7);
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
-">
-  <div style="
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    text-align:center;
-    max-width:300px;
-  ">
-    
-    <p>กรอกข้อมูลสำเร็จ!</p>
-    <button id="okBtn">OK</button>
+  <div id="modal">
+    <div>
+      <p id="modalText">ข้อความ</p>
+      <button id="okBtn">OK</button>
+    </div>
   </div>
-</div>
- <!-- popup รอสักครู่ -->
-<div id="loadingModal" style="
-  display:flex;
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background: rgba(0,0,0,0.5);
-  justify-content:center;
-  align-items:center;
-  z-index:2000;
-">
-  <div style="
-    background:white;
-    padding:4vw;            /* ใช้ vw ให้ปรับตามหน้าจอ */
-    border-radius:2vw;
-    text-align:center;
-    max-width:90%;          /* ไม่เกิน 90% ของจอ */
-    width:90%;
-    font-size:4vw;          /* ขนาดตัวอักษรปรับตามจอ */
-    box-sizing:border-box;
-  ">
-    <p>กรุณารอสักครู่...</p>
-  </div>
-</div>
+
 <script>
 let isSubmitted = false;
 
-const itemSelect = document.getElementById("itemSelect");
-const colorSelect = document.getElementById("colorSelect");
 const form = document.getElementById("surveyForm");
-const modal = document.getElementById("modal");
-const okBtn = document.getElementById("okBtn");
 const loadingModal = document.getElementById("loadingModal");
+const modal = document.getElementById("modal");
+const modalText = document.getElementById("modalText");
+const okBtn = document.getElementById("okBtn");
 
-const colorOptions = {
-  "รองเท้าแตะ": ["ดำ", "ขาว"],
-  "รองเท้าผ้าใบ": ["แดง", "ดำ", "ขาว", "ครีม", "เขียว", "น้ำเงิน"]
-};
-
-function updateColors() {
-  const selectedItem = itemSelect.value;
-  colorSelect.innerHTML = '<option value="">-- เลือกสี --</option>';
-  if (selectedItem && colorOptions[selectedItem]) {
-    colorOptions[selectedItem].forEach(color => {
-      const option = document.createElement("option");
-      option.value = color;
-      option.textContent = color;
-      colorSelect.appendChild(option);
-    });
-  }
-}
-itemSelect.addEventListener("change", updateColors);
-
-// 0 helper: fetch พร้อม timeout ป้องกันค้าง
-async function fetchWithTimeout(resource, options = {}) {
-  const { timeout = 8000 } = options;
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  const response = await fetch(resource, { ...options, signal: controller.signal });
-  clearTimeout(id);
-  return response;
+function showModal(msg, onOk){
+  modalText.textContent = msg;
+  modal.style.display = "flex";
+  okBtn.onclick = () => {
+    modal.style.display = "none";
+    if(onOk) onOk();
+  };
 }
 
-async function main() {
-  try {
-    console.log("เริ่ม main()");
+async function main(){
+  try{
     await liff.init({ liffId: "2008187346-LZW3ndvO" });
-    if (!liff.isLoggedIn()) return liff.login();
+    if(!liff.isLoggedIn()) return liff.login();
 
     const profile = await liff.getProfile();
     document.getElementById("UserId").value = profile.userId;
 
-    const trackingCode = sessionStorage.getItem("tracking") || "";
+    // ✅ ดึง tracking จาก ScanQrcode3
+    const trackingCode = (sessionStorage.getItem("tracking") || "").trim();
     document.getElementById("Tracking").value = trackingCode;
-    console.log("Tracking:", trackingCode);
 
-    if (!trackingCode) {
-      loadingModal.style.display = "none";
-      modal.querySelector("p").textContent = "❌ ไม่พบ QR Code กรุณาสแกนก่อน";
-      modal.style.display = "flex";
-      okBtn.onclick = () => {
-        modal.style.display = "none";
+    // กันหลุด (จริง ๆ บังคับใน ScanQrcode3 แล้ว แต่กันเหนียว)
+    if(!trackingCode){
+      showModal("❌ ไม่พบรหัสพัสดุ กรุณากลับไปสแกน/กรอกก่อน", () => {
         window.location.href = "ScanQrcode3.html";
-      };
+      });
       return;
     }
-
-    // โหลดข้อมูลจาก Google Sheet ก่อน (timeout ป้องกันค้าง)
-    const SECRET_TOKEN = "Gl0D$Yt1@";
-    const GET_URL = `https://script.google.com/macros/s/AKfycbyklv9SQB7L2WdrTjHRuwZkm9UB0zime9s8v8gutC2p3VcVPQB1Pd3I8rZoQA_v63zx/exec?token=${SECRET_TOKEN}&UserId=${profile.userId}`;
-    console.log("Fetch:", GET_URL);
-
-    let result = {};
-    try {
-      const res = await fetchWithTimeout(GET_URL, { timeout: 8000 });
-      result = await res.json();
-    } catch (err) {
-      console.warn("fetch timeout หรือ error", err);
-    }
-
-    // มีข้อมูลใน Sheet → ใช้ก่อน
-    if (result.lastData && (result.lastData.DisplayName || result.lastData.PostCode)) {
-      const d = result.lastData;
-      document.querySelector("input[name='DisplayName']").value = d.DisplayName || "";
-      document.querySelector("input[name='Location']").value = d.Location || "";
-      document.querySelector("input[name='PostCode']").value = d.PostCode || "";
-    } else {
-      // fallback จาก ScanQrcode3
-      const fallback = JSON.parse(sessionStorage.getItem("selectedRow") || "{}");
-      document.querySelector("input[name='DisplayName']").value = fallback.CustomerName || "";
-      document.querySelector("input[name='Location']").value = fallback.BillingAddr || "";
-      document.querySelector("input[name='PostCode']").value = fallback.BillingPostCode || "";
-    }
-
-  } catch (err) {
-    console.error("main() error:", err);
-    modal.querySelector("p").textContent = "เกิดข้อผิดพลาดในการโหลดข้อมูล โปรดลองอีกครั้ง";
-    modal.style.display = "flex";
-    okBtn.onclick = () => (modal.style.display = "none");
-  } finally {
-    console.log("ซ่อน loading แสดงฟอร์ม");
+  }catch(err){
+    console.error(err);
+    showModal("เกิดข้อผิดพลาดในการโหลดหน้า โปรดลองใหม่อีกครั้ง");
+    return;
+  }finally{
     loadingModal.style.display = "none";
     form.style.display = "block";
   }
@@ -331,51 +216,56 @@ async function main() {
 
 main();
 
-// ส่งข้อมูล
-form.addEventListener("submit", function (event) {
-  event.preventDefault();
-  const selectedItem = itemSelect.value;
-  const selectedColor = colorSelect.value;
-  if (selectedItem && !selectedColor) {
-    modal.querySelector("p").textContent = "กรุณาเลือกสีด้วยครับ";
-    modal.style.display = "flex";
-    okBtn.onclick = () => (modal.style.display = "none");
+// submit = commit จริง
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const tracking = document.getElementById("Tracking").value.trim();
+  const province = document.getElementById("Province").value.trim();
+
+  if(!tracking){
+    showModal("❌ กรุณาระบุ Tracking No.");
+    return;
+  }
+  if(tracking.length < 10){
+    showModal("❌ รหัสพัสดุไม่ถูกต้อง");
+    return;
+  }
+  if(!province){
+    showModal("❌ กรุณาระบุจังหวัด");
     return;
   }
 
   isSubmitted = true;
   form.submit();
-  modal.querySelector("p").textContent = "กรอกข้อมูลสำเร็จ!";
-  modal.style.display = "flex";
 
-  // เคลียร์ค่า input
-  ["DisplayName", "Location", "PostCode"].forEach(name => {
-    document.querySelector(`input[name='${name}']`).value = "";
-  });
-  itemSelect.value = "";
-  colorSelect.innerHTML = '<option value="">-- เลือกสี --</option>';
-
+  showModal("บันทึกสำเร็จ!", () => {
   sessionStorage.removeItem("tracking");
+  setTimeout(() => liff.closeWindow(), 800);
+  });
 });
 
-// ส่ง beacon เผื่อปิดหน้า
+// ✅ ส่ง beacon เผื่อผู้ใช้ปิดหน้า / ไม่กด submit
 document.addEventListener("visibilitychange", function () {
+  // ยิงเฉพาะกรณี ยังไม่ submit และกำลังจะซ่อนหน้า
   if (!isSubmitted && document.visibilityState === "hidden") {
     const data = new FormData();
     data.append("token", "Gl0D$Yt1@");
     data.append("UserId", document.getElementById("UserId").value);
-    data.append("Tracking", document.getElementById("Tracking").value);
+
+    // tracking มาจาก textbox (เพราะแก้ไขได้)
+    data.append("Tracking", document.getElementById("Tracking").value.trim());
+
+    // จังหวัด map ไป Location
+    data.append("Location", document.getElementById("Province").value.trim());
+
     navigator.sendBeacon(
       "https://script.google.com/macros/s/AKfycbyklv9SQB7L2WdrTjHRuwZkm9UB0zime9s8v8gutC2p3VcVPQB1Pd3I8rZoQA_v63zx/exec",
       data
     );
   }
 });
-
-okBtn.addEventListener("click", () => {
-  modal.style.display = "none";
-  liff.closeWindow();
-});
+  
 </script>
 </body>
 </html>
