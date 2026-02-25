@@ -252,12 +252,18 @@ async function processCode(code){
   if(!guardFlowOrRestart()) return;
   touchFlow();
 
+ // บังคับว่าต้องมีข้อมูลเท่านั้น
   code = (code || "").trim();
   if(!code){
     await showAlertPopup("❌ กรุณากรอกข้อมูลด้วย", false);
     return;
   }
-
+  //  กัน code สั้น/มั่วเกินไป
+   if(code.length < 10){
+     await showAlertPopup("❌ รหัสพัสดุไม่ถูกต้อง", false);
+    return;
+   }
+   
   // เซ็ตค่า "ล่าสุด" เสมอ
   sessionStorage.setItem('tracking', code);
 
