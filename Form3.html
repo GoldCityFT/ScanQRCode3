@@ -101,9 +101,11 @@
     method="POST"
     target="hidden_iframe">
 
-    <!-- ต้องมีเหมือนเดิม -->
-    <input type="hidden" name="token" value="Gl0D$Yt1@" />
+    
+    <!-- Security -->
+  
     <input type="hidden" id="UserId" name="UserId" />
+    <input type="hidden" id="IdToken" name="IdToken" />
 
     <!-- 1 Tracking -->
     <label>รหัสหน้ากล่องพัสดุ (Tracking No.)</label>
@@ -246,6 +248,13 @@ async function main(){
     const trackingCode = (sessionStorage.getItem("tracking") || "").trim();
     document.getElementById("Tracking").value = trackingCode;
 
+    const idToken = liff.getIDToken();
+    if(!idToken){
+      showModal("❌ ไม่พบ idToken โปรดลองใหม่");
+     return;
+    }
+    document.getElementById("IdToken").value = idToken;
+
     // กันหลุด (จริง ๆ บังคับใน ScanQrcode3 แล้ว แต่กันเหนียว)
     if(!trackingCode){
       showModal("❌ ไม่พบรหัสพัสดุ กรุณากลับไปสแกน/กรอกก่อน", () => {
@@ -299,7 +308,8 @@ document.addEventListener("visibilitychange", function () {
   // ยิงเฉพาะกรณี ยังไม่ submit และกำลังจะซ่อนหน้า
   if (!isSubmitted && document.visibilityState === "hidden") {
     const data = new FormData();
-    data.append("token", "Gl0D$Yt1@");
+
+    data.append("IdToken", document.getElementById("IdToken").value);
     data.append("UserId", document.getElementById("UserId").value);
 
     // tracking มาจาก textbox (เพราะแก้ไขได้)
