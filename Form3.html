@@ -305,7 +305,6 @@ form.addEventListener("submit", (e) => {
   });
 });
 
-<script>
 const POST_URL = "https://script.google.com/macros/s/AKfycbwOiqUypcq2ktLvTxfomqKEl0VynXtZiyaLww2nLpUPwkf8pmJMpYABa2iVQBKmocYNZQ/exec";
 
 let beaconSent = false;
@@ -341,7 +340,6 @@ window.addEventListener("pagehide", sendDraftOnce);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") sendDraftOnce();
 });
-</script>
   
 </script>
 </body>
