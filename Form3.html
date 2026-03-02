@@ -254,6 +254,8 @@ async function main(){
      return;
     }
     document.getElementById("IdToken").value = idToken;
+    sessionStorage.setItem("uid", profile.userId);
+    sessionStorage.setItem("idt", idToken);
 
     // กันหลุด (จริง ๆ บังคับใน ScanQrcode3 แล้ว แต่กันเหนียว)
     if(!trackingCode){
@@ -303,26 +305,38 @@ form.addEventListener("submit", (e) => {
   });
 });
 
-// ส่ง beacon เผื่อผู้ใช้ปิดหน้า / ไม่กด submit
-document.addEventListener("visibilitychange", function () {
-  // ยิงเฉพาะกรณี ยังไม่ submit และกำลังจะซ่อนหน้า
-  if (!isSubmitted && document.visibilityState === "hidden") {
-    const data = new FormData();
+const POST_URL = "https://script.google.com/macros/s/AKfycbwOiqUypcq2ktLvTxfomqKEl0VynXtZiyaLww2nLpUPwkf8pmJMpYABa2iVQBKmocYNZQ/exec";
 
-    data.append("IdToken", document.getElementById("IdToken").value);
-    data.append("UserId", document.getElementById("UserId").value);
+let beaconSent = false;
 
-    // tracking มาจาก textbox (เพราะแก้ไขได้)
-    data.append("Tracking", document.getElementById("Tracking").value.trim());
+function buildDraftData(){
+  const data = new FormData();
 
-    // จังหวัด map ไป Location
-    data.append("Location", document.getElementById("Province").value.trim());
+  const uid = sessionStorage.getItem("uid") || document.getElementById("UserId").value || "";
+  const idt = sessionStorage.getItem("idt") || document.getElementById("IdToken").value || "";
 
-    navigator.sendBeacon(
-      "https://script.google.com/macros/s/AKfycbwOiqUypcq2ktLvTxfomqKEl0VynXtZiyaLww2nLpUPwkf8pmJMpYABa2iVQBKmocYNZQ/exec",
-      data
-    );
-  }
+  data.append("UserId", uid);
+  data.append("IdToken", idt);
+  data.append("Tracking", (document.getElementById("Tracking").value || "").trim());
+  data.append("Location", (document.getElementById("Province").value || "").trim());
+
+  return data;
+}
+
+function sendDraftOnce(){
+  if (isSubmitted) return;
+  if (beaconSent) return;
+
+  const data = buildDraftData();
+
+  beaconSent = true;
+  navigator.sendBeacon(POST_URL, data);
+}
+
+window.addEventListener("pagehide", sendDraftOnce);
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") sendDraftOnce();
 });
   
 </script>
