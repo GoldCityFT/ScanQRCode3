@@ -305,39 +305,43 @@ form.addEventListener("submit", (e) => {
   });
 });
 
+<script>
 const POST_URL = "https://script.google.com/macros/s/AKfycbwOiqUypcq2ktLvTxfomqKEl0VynXtZiyaLww2nLpUPwkf8pmJMpYABa2iVQBKmocYNZQ/exec";
 
 let beaconSent = false;
 
-function buildDraftData(){
-  const data = new FormData();
-
+function buildDraftBody(){
   const uid = sessionStorage.getItem("uid") || document.getElementById("UserId").value || "";
   const idt = sessionStorage.getItem("idt") || document.getElementById("IdToken").value || "";
+  const tracking = (document.getElementById("Tracking").value || "").trim();
+  const location = (document.getElementById("Province").value || "").trim();
 
-  data.append("UserId", uid);
-  data.append("IdToken", idt);
-  data.append("Tracking", (document.getElementById("Tracking").value || "").trim());
-  data.append("Location", (document.getElementById("Province").value || "").trim());
+  const body = new URLSearchParams();
+  body.set("UserId", uid);
+  body.set("IdToken", idt);
+  body.set("Tracking", tracking);
+  body.set("Location", location);
 
-  return data;
+  return body; 
 }
 
 function sendDraftOnce(){
   if (isSubmitted) return;
   if (beaconSent) return;
 
-  const data = buildDraftData();
+  const body = buildDraftBody();
+
 
   beaconSent = true;
-  navigator.sendBeacon(POST_URL, data);
+  const ok = navigator.sendBeacon(POST_URL, body);
+  console.log("sendBeacon ok?", ok, Object.fromEntries(body.entries()));
 }
 
 window.addEventListener("pagehide", sendDraftOnce);
-
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") sendDraftOnce();
 });
+</script>
   
 </script>
 </body>
