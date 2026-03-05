@@ -97,13 +97,26 @@
       z-index:2100;
     }
     #modal > div{
-      background:#fff; 
-      padding:18px; 
-      border-radius:10px;
+      background:#fff;
+      padding:40px;
+      border-radius:20px;
       text-align:center;
-      width:90%; 
-      max-width:320px; 
-      box-sizing:border-box;
+      width:90%;
+      max-width:420px;
+      box-shadow:0 8px 25px rgba(0,0,0,.5);
+    }
+
+    #modalText{
+      font-size:clamp(24px, 6vw, 34px);
+      font-weight:800;
+      margin:0 0 20px;
+    }
+
+    #modal button{
+      margin-top:0;
+      padding:16px;
+      font-size:clamp(18px, 4.5vw, 24px);
+      border-radius:14px;
     }
      /* Popup ยืนยันจังหวัด */
     #confirmModal{
@@ -117,19 +130,23 @@
     }
     #confirmModal > div{
       background:#fff;
-      padding:18px;
-      border-radius:10px;
+      padding:28px;
+      border-radius:18px;
       text-align:center;
       width:90%;
       max-width:360px;
-      box-sizing:border-box;
+      box-shadow:0 8px 25px rgba(0,0,0,.45);
     }
     #confirmModal .provinceBox{
-      margin:10px 0 4px;
-      font-size:1.4rem;
+      margin:14px 0 10px;
+      font-size:2rem;     /* ใหญ่ขึ้น */
       font-weight:bold;
       color:#111;
       word-break:break-word;
+    }
+    #confirmModal p{
+    font-size:1.3rem;
+    font-weight:600;
     }
     .btnRow{
       display:flex;
@@ -371,11 +388,12 @@ main();
 
 provinceInput.addEventListener("blur", () => {
   const value = normalizeThai(provinceInput.value);
+  provinceInput.value = value; 
 
   if(!value) return;
 
   if(!isValidProvinceExact(value)){
-    showModal("❌ กรุณากรอกข้อมูลจังหวัดให้ถูกต้องโดยไม่ต้องใส่จังหวัดนำหน้า");
+    showModal("❌ กรุณากรอกข้อมูลให้ถูกต้องโดยไม่ต้องใส่จังหวัดนำหน้า");
     provinceInput.focus();
   }
 });
