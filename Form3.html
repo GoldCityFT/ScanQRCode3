@@ -187,7 +187,7 @@
     -->
 
     <!-- 2 จังหวัด (map ไป Location เพื่อไม่แก้ App Script.) -->
-    <label>จังหวัด (กรอกโดยไม่ต้องมีคำว่า “จังหวัด”)</label>
+    <label>จังหวัด (ไม่ต้องกรอกคำว่า “จังหวัด”)</label>
     <input
       type="text"
       id="Province"
@@ -390,14 +390,23 @@ provinceInput.addEventListener("blur", () => {
   const value = normalizeThai(provinceInput.value);
   provinceInput.value = value; 
 
-  if(!value) return;
+  if(value.length < 2) return;
 
   if(!isValidProvinceExact(value)){
-    showModal("❌ กรุณากรอกให้ถูกต้องโดยไม่ต้องใส่จังหวัดนำหน้า");
-    provinceInput.focus();
-  }
+   showModal("❌ กรุณากรอกข้อมูลจังหวัดให้ถูกต้อง", focusProvince);
+   }
 });
 
+function focusProvince(){
+  const el = document.getElementById("Province");
+  // หน่วงนิดนึงกัน iOS/LIFF ไม่ยอมโฟกัสทันทีหลังปิด modal
+  setTimeout(() => {
+    el.focus();
+    // select มีบางเครื่องไม่รองรับหรือไม่ทำงาน ก็ไม่เป็นไร
+    if (typeof el.select === "function") el.select();
+  }, 120);
+}
+ 
 /* เปิด popup ยืนยันจังหวัด */
 function openConfirm(province){
   confirmProvince.textContent = province;
@@ -437,11 +446,10 @@ form.addEventListener("submit", (e) => {
     showModal("❌ กรุณาระบุจังหวัด");
     return;
   }
-   if(!isValidProvinceExact(province)){
-    showModal("❌ กรุณากรอกข้อมูลจังหวัดให้ตรงกับรายการที่กำหนดเท่านั้น");
-    document.getElementById("Province").focus();
-    return;
-  }
+if(!isValidProvinceExact(province)){
+  showModal("❌ กรุณากรอกข้อมูลจังหวัดให้ตรงกับรายการที่กำหนดเท่านั้น", focusProvince);
+  return;
+}
     //  ผ่านแล้ว: ให้ผู้ใช้ยืนยันก่อน
   openConfirm(province);
 });
