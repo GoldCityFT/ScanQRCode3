@@ -68,6 +68,48 @@
       border:0 !important;
     }
 
+    .provinceWrap{
+    position:relative;
+    width:100%;
+  }
+
+  .provinceDropdown{
+    display:none;
+    position:absolute;
+    top:100%;
+    left:0;
+    right:0;
+    margin-top:6px;
+    
+    background:#fff;
+    border:1px solid #ccc;
+    border-radius:10px;
+    box-shadow:0 8px 20px rgba(0,0,0,.15);
+    
+    max-height:220px;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    
+    z-index:3000;
+    -webkit-overflow-scrolling:touch;
+    }
+
+  .provinceItem{
+    padding:12px 14px;
+    font-size:1rem;
+    border-bottom:1px solid #eee;
+    cursor:pointer;
+  }
+
+  .provinceItem:last-child{
+    border-bottom:none;
+  }
+
+  .provinceItem:active,
+  .provinceItem:hover{
+    background:#f5f5f5;
+  }
+    
     #loadingModal{
       display:flex; 
       position:fixed; 
@@ -187,98 +229,21 @@
     -->
 
     <!-- 2 จังหวัด (map ไป Location เพื่อไม่แก้ App Script.) -->
-    <label>จังหวัด (ไม่ต้องกรอกคำว่า “จังหวัด”)</label>
-    <input
+   <label>จังหวัด (ไม่ต้องกรอกคำว่า “จังหวัด”)</label>
+    <div class="provinceWrap">
+  <input
       type="text"
       id="Province"
       name="Location"
-      list="provinceList"
       required
       placeholder="พิมพ์เพื่อค้นหา เช่น กรุงเทพมหานคร"
       autocomplete="off"
       autocorrect="off"
       autocapitalize="none"
     />
-    <datalist id="provinceList">
-      <option value="กระบี่"></option>
-      <option value="กรุงเทพมหานคร"></option>
-      <option value="กาญจนบุรี"></option>
-      <option value="กาฬสินธุ์"></option>
-      <option value="กำแพงเพชร"></option>
-      <option value="ขอนแก่น"></option>
-      <option value="จันทบุรี"></option>
-      <option value="ฉะเชิงเทรา"></option>
-      <option value="ชลบุรี"></option>
-      <option value="ชัยนาท"></option>
-      <option value="ชัยภูมิ"></option>
-      <option value="ชุมพร"></option>
-      <option value="เชียงราย"></option>
-      <option value="เชียงใหม่"></option>
-      <option value="ตรัง"></option>
-      <option value="ตราด"></option>
-      <option value="ตาก"></option>
-      <option value="นครนายก"></option>
-      <option value="นครปฐม"></option>
-      <option value="นครพนม"></option>
-      <option value="นครราชสีมา"></option>
-      <option value="นครศรีธรรมราช"></option>
-      <option value="นครสวรรค์"></option>
-      <option value="นนทบุรี"></option>
-      <option value="นราธิวาส"></option>
-      <option value="น่าน"></option>
-      <option value="บึงกาฬ"></option>
-      <option value="บุรีรัมย์"></option>
-      <option value="ปทุมธานี"></option>
-      <option value="ประจวบคีรีขันธ์"></option>
-      <option value="ปราจีนบุรี"></option>
-      <option value="ปัตตานี"></option>
-      <option value="พระนครศรีอยุธยา"></option>
-      <option value="พะเยา"></option>
-      <option value="พังงา"></option>
-      <option value="พัทลุง"></option>
-      <option value="พิจิตร"></option>
-      <option value="พิษณุโลก"></option>
-      <option value="เพชรบุรี"></option>
-      <option value="เพชรบูรณ์"></option>
-      <option value="แพร่"></option>
-      <option value="ภูเก็ต"></option>
-      <option value="มหาสารคาม"></option>
-      <option value="มุกดาหาร"></option>
-      <option value="แม่ฮ่องสอน"></option>
-      <option value="ยะลา"></option>
-      <option value="ยโสธร"></option>
-      <option value="ร้อยเอ็ด"></option>
-      <option value="ระนอง"></option>
-      <option value="ระยอง"></option>
-      <option value="ราชบุรี"></option>
-      <option value="ลพบุรี"></option>
-      <option value="ลำปาง"></option>
-      <option value="ลำพูน"></option>
-      <option value="เลย"></option>
-      <option value="ศรีสะเกษ"></option>
-      <option value="สกลนคร"></option>
-      <option value="สงขลา"></option>
-      <option value="สตูล"></option>
-      <option value="สมุทรปราการ"></option>
-      <option value="สมุทรสงคราม"></option>
-      <option value="สมุทรสาคร"></option>
-      <option value="สระแก้ว"></option>
-      <option value="สระบุรี"></option>
-      <option value="สิงห์บุรี"></option>
-      <option value="สุโขทัย"></option>
-      <option value="สุพรรณบุรี"></option>
-      <option value="สุราษฎร์ธานี"></option>
-      <option value="สุรินทร์"></option>
-      <option value="หนองคาย"></option>
-      <option value="หนองบัวลำภู"></option>
-      <option value="อ่างทอง"></option>
-      <option value="อำนาจเจริญ"></option>
-      <option value="อุดรธานี"></option>
-      <option value="อุตรดิตถ์"></option>
-      <option value="อุทัยธานี"></option>
-      <option value="อุบลราชธานี"></option>
-    </datalist>
-
+    <div id="provinceDropdown" class="provinceDropdown"></div>
+  </div>
+    
     <button type="submit">Submit</button>
   </form>
 
@@ -328,19 +293,88 @@ function showModal(msg, onOk){
   };
 }
 
-/** สร้าง Set ของจังหวัดจาก datalist เพื่อเช็ค exact match */
-function getProvinceSet(){
-  const opts = document.querySelectorAll("#provinceList option");
-  const set = new Set();
-  opts.forEach(o => set.add((o.value || "").trim()));
-  return set;
-}
-const PROVINCES = getProvinceSet();
+/** รายชื่อจังหวัดทั้งหมด */
+const provinceInput = document.getElementById("Province");
+const provinceDropdown = document.getElementById("provinceDropdown");  
+const PROVINCES = [
+  "กระบี่","กรุงเทพมหานคร","กาญจนบุรี","กาฬสินธุ์","กำแพงเพชร","ขอนแก่น","จันทบุรี",
+  "ฉะเชิงเทรา","ชลบุรี","ชัยนาท","ชัยภูมิ","ชุมพร","เชียงราย","เชียงใหม่","ตรัง","ตราด",
+  "ตาก","นครนายก","นครปฐม","นครพนม","นครราชสีมา","นครศรีธรรมราช","นครสวรรค์","นนทบุรี",
+  "นราธิวาส","น่าน","บึงกาฬ","บุรีรัมย์","ปทุมธานี","ประจวบคีรีขันธ์","ปราจีนบุรี","ปัตตานี",
+  "พระนครศรีอยุธยา","พะเยา","พังงา","พัทลุง","พิจิตร","พิษณุโลก","เพชรบุรี","เพชรบูรณ์",
+  "แพร่","ภูเก็ต","มหาสารคาม","มุกดาหาร","แม่ฮ่องสอน","ยะลา","ยโสธร","ร้อยเอ็ด","ระนอง",
+  "ระยอง","ราชบุรี","ลพบุรี","ลำปาง","ลำพูน","เลย","ศรีสะเกษ","สกลนคร","สงขลา","สตูล",
+  "สมุทรปราการ","สมุทรสงคราม","สมุทรสาคร","สระแก้ว","สระบุรี","สิงห์บุรี","สุโขทัย",
+  "สุพรรณบุรี","สุราษฎร์ธานี","สุรินทร์","หนองคาย","หนองบัวลำภู","อ่างทอง","อำนาจเจริญ",
+  "อุดรธานี","อุตรดิตถ์","อุทัยธานี","อุบลราชธานี"
+];
+
+
 
 function isValidProvinceExact(text){
-  const v = (text || "").trim();
-  return PROVINCES.has(v);
+  const v = normalizeThai(text);
+  return PROVINCES.includes(v);
 }
+
+function renderProvinceDropdown(keyword = ""){
+  const q = normalizeThai(keyword);
+  let items = PROVINCES;
+
+  if(q){
+    items = PROVINCES.filter(p => p.includes(q));
+  }
+
+  if(items.length === 0){
+    provinceDropdown.innerHTML = `<div class="provinceItem">ไม่พบจังหวัด</div>`;
+    provinceDropdown.style.display = "block";
+    return;
+  }
+
+  provinceDropdown.innerHTML = items
+    .slice(0, 15)
+    .map(p => `<div class="provinceItem" data-value="${p}">${p}</div>`)
+    .join("");
+
+  provinceDropdown.style.display = "block";
+}
+
+function hideProvinceDropdown(){
+  provinceDropdown.style.display = "none";
+}
+
+provinceInput.addEventListener("focus", () => {
+  renderProvinceDropdown(provinceInput.value);
+  
+setTimeout(()=>{
+    provinceInput.scrollIntoView({
+      block:"center",
+      behavior:"smooth"
+    });
+  },200);
+});
+
+provinceInput.addEventListener("input", () => {
+  provinceInput.value = normalizeThai(provinceInput.value);
+  renderProvinceDropdown(provinceInput.value);
+});
+
+provinceDropdown.addEventListener("click", (e) => {
+  const item = e.target.closest(".provinceItem");
+  if(!item) return;
+
+  const value = item.dataset.value;
+  if(!value) return;
+
+  provinceInput.value = value;
+  hideProvinceDropdown();
+});
+
+document.addEventListener("click", (e) => {
+  if(!e.target.closest(".provinceWrap")){
+    hideProvinceDropdown();
+  }
+});
+
   function normalizeThai(s){
   return (s || "").replace(/\s+/g, " ").trim();
 }
@@ -384,17 +418,18 @@ async function main(){
 }
 
 main();
-  const provinceInput = document.getElementById("Province");
 
 provinceInput.addEventListener("blur", () => {
-  const value = normalizeThai(provinceInput.value);
-  provinceInput.value = value; 
+  setTimeout(() => {
+    const value = normalizeThai(provinceInput.value);
+    provinceInput.value = value;
 
-  if(value.length < 2) return;
+    if(value.length < 2) return;
 
-  if(!isValidProvinceExact(value)){
-   showModal("❌ กรุณากรอกข้อมูลจังหวัดให้ถูกต้อง", focusProvince);
-   }
+    if(!isValidProvinceExact(value)){
+      showModal("❌ กรุณากรอกข้อมูลจังหวัดให้ถูกต้อง", focusProvince);
+    }
+  }, 150);
 });
 
 function focusProvince(){
@@ -474,7 +509,7 @@ function buildDraftBody(){
   const uid = sessionStorage.getItem("uid") || document.getElementById("UserId").value || "";
   const idt = sessionStorage.getItem("idt") || document.getElementById("IdToken").value || "";
   const tracking = (document.getElementById("Tracking").value || "").trim();
-  const location = (document.getElementById("Province").value || "").trim();
+  const location = normalizeThai(document.getElementById("Province").value);
 
   const body = new URLSearchParams();
   body.set("UserId", uid);
