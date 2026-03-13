@@ -278,7 +278,7 @@ const loadingModal = document.getElementById("loadingModal");
 const modal = document.getElementById("modal");
 const modalText = document.getElementById("modalText");
 const okBtn = document.getElementById("okBtn");
-const BENEFIT_URL = "PUT_YOUR_ZWIZ_LINK_HERE";
+const BENEFIT_URL = "https://line.me/R/oaMessage/@269mmdto/?CRM";
 
 const confirmModal = document.getElementById("confirmModal");
 const confirmProvince = document.getElementById("confirmProvince");
@@ -461,7 +461,7 @@ function doRealSubmit(){
     sessionStorage.removeItem("tracking");
 
     // เปิดลิงก์สิทธิประโยชน์ก่อน
-    if (BENEFIT_URL && BENEFIT_URL !== "PUT_YOUR_ZWIZ_LINK_HERE") {
+    if (BENEFIT_URL && BENEFIT_URL !== "https://line.me/R/oaMessage/@269mmdto/?CRM") {
       window.location.href = BENEFIT_URL;
       return;
     }
